@@ -1,0 +1,14 @@
+{
+    "id": "{D2516F46-D422-3393-ABF6-2ACF5CA7070B}",
+    "name": "Warnmelder",
+    "type": 3,
+    "vendor": "UB",
+    "aliases": [
+        "Warnmelder"
+    ],
+    "url": "https://github.com/ubittner/Warnmelder/tree/main/Warnmelder",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "WM"
+}

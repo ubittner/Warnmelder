@@ -1,0 +1,12 @@
+{
+    "id": "{70D8F340-4128-EEC8-3FCE-5C3FA449B64F}",
+    "name": "Warnmelder",
+    "author": "Ulrich Bittner",
+    "url": "https://github.com/ubittner/Warnmelder",
+    "compatibility": {
+        "version": "6.1"
+    },
+    "version": "1.0",
+    "build": 1,
+    "date": 1674930963
+}
