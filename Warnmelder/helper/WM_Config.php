@@ -1445,11 +1445,40 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
+                            'type'    => 'Select',
+                            'name'    => 'SelectIdents',
+                            'options' => [
+                                [
+                                    'caption' => 'Benutzerdefiniert',
+                                    'value'   => ''
+                                ],
+                                [
+                                    'caption' => 'STATE',
+                                    'value'   => 'STATE'
+                                ],
+                                [
+                                    'caption' => 'ALARMSTATE',
+                                    'value'   => 'ALARMSTATE'
+                                ],
+                                [
+                                    'caption' => 'SMOKE_DETECTOR_ALARM_STATUS',
+                                    'value'   => 'SMOKE_DETECTOR_ALARM_STATUS'
+                                ],
+                                [
+                                    'caption' => 'ERROR_SABOTAGE, SABOTAGE',
+                                    'value'   => 'ERROR_SABOTAGE, SABOTAGE'
+                                ],
+                                [
+                                    'caption' => 'DUTYCYCLE, DUTY_CYCLE',
+                                    'value'   => 'DUTYCYCLE, DUTY_CYCLE'
+                                ]
+                            ]
+
+                        ],
+                        [
                             'type'    => 'ValidationTextBox',
                             'name'    => 'ObjectIdents',
-                            'caption' => 'Identifikator',
-                            'width'   => '800px',
-                            'value'   => 'STATE, ALARMSTATE, SMOKE_DETECTOR_ALARM_STATUS, ERROR_SABOTAGE, SABOTAGE'
+                            'caption' => 'Identifikator'
                         ],
                         [
                             'type'    => 'Label',
@@ -1464,7 +1493,7 @@ trait WM_Config
                                     [
                                         'type'    => 'Button',
                                         'caption' => 'Ermitteln',
-                                        'onClick' => self::MODULE_PREFIX . '_DetermineTriggerVariables($id, $ObjectIdents);'
+                                        'onClick' => self::MODULE_PREFIX . '_DetermineTriggerVariables($id, $SelectIdents, $ObjectIdents);'
                                     ]
                                 ]
                             ]

@@ -115,19 +115,26 @@ trait WM_MonitoredVariables
     /**
      * Determines the trigger variables automatically.
      *
+     * @param string $SelectIdents
      * @param string $ObjectIdents
      * @return void
      * @throws Exception
      */
-    public function DetermineTriggerVariables(string $ObjectIdents): void
+    public function DetermineTriggerVariables(string $SelectIdents, string $ObjectIdents): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->SendDebug(__FUNCTION__, 'Auswahl: ' . $SelectIdents, 0);
         $this->SendDebug(__FUNCTION__, 'Identifikator: ' . $ObjectIdents, 0);
         //Determine variables first
         $determinedVariables = [];
         foreach (@IPS_GetVariableList() as $variable) {
-            if ($ObjectIdents == '') {
-                return;
+            if ($SelectIdents == '') {
+                if ($ObjectIdents == '') {
+                    echo 'Abbruch, es wurde kein Identifikator angegeben!';
+                    return;
+                }
+            } else {
+                $ObjectIdents = $SelectIdents;
             }
             $objectIdents = str_replace(' ', '', $ObjectIdents);
             $objectIdents = explode(',', $objectIdents);
@@ -227,7 +234,11 @@ trait WM_MonitoredVariables
         if (@IPS_HasChanges($this->InstanceID)) {
             @IPS_ApplyChanges($this->InstanceID);
         }
-        echo 'Die Auslöser wurden erfolgreich hinzugefügt!';
+        if (!empty($determinedVariables)) {
+            echo 'Die Auslöser wurden erfolgreich hinzugefügt!';
+        } else {
+            echo 'Es wurden keinen Auslöser gefunden!';
+        }
     }
 
     /**
