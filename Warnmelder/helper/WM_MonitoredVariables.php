@@ -292,6 +292,7 @@ trait WM_MonitoredVariables
             array_multisort(array_column($variables, 'Name'), SORT_ASC, $variables);
             //Rebase array
             $variables = array_values($variables);
+            $separator = false;
             if (!empty($variables)) {
                 //Show sensors with alarm first
                 $separator = false;
@@ -306,11 +307,23 @@ trait WM_MonitoredVariables
                         }
                     }
                 }
-                if ($separator) {
-                    $string .= '<tr><td><b>&#8205;</b></td><td><b>&#8205;</b></td><td><b>&#8205;</b></td><td><b>&#8205;</b></td></tr>';
-                }
                 //Sensors with no alarm are next
                 if ($this->ReadPropertyBoolean('EnableOK')) {
+                    //Check if we have an active element for a spacer
+                    $existingElement = false;
+                    foreach ($variables as $variable) {
+                        $id = $variable['ID'];
+                        if ($id != 0 && IPS_ObjectExists($id)) {
+                            if ($variable['ActualStatus'] == 0) {
+                                $existingElement = true;
+                            }
+                        }
+                    }
+                    //Add spacer
+                    if ($separator && $existingElement) {
+                        $string .= '<tr><td><b>&#8205;</b></td><td><b>&#8205;</b></td><td><b>&#8205;</b></td><td><b>&#8205;</b></td></tr>';
+                    }
+                    //Add sensors
                     foreach ($variables as $variable) {
                         $id = $variable['ID'];
                         if ($id != 0 && IPS_ObjectExists($id)) {

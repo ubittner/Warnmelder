@@ -25,7 +25,7 @@ class Warnmelder extends IPSModule
     //Constants
     private const MODULE_NAME = 'Warnmelder';
     private const MODULE_PREFIX = 'WM';
-    private const MODULE_VERSION = '1.0-3, 01.02.2023';
+    private const MODULE_VERSION = '1.0-4, 01.02.2023';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
