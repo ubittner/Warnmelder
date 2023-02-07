@@ -43,6 +43,7 @@ class Warnmelder extends IPSModule
         $this->RegisterPropertyBoolean('EnableActive', false);
         $this->RegisterPropertyBoolean('EnableStatus', true);
         $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
+        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
         $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
         $this->RegisterPropertyBoolean('EnableAlarmSensorList', true);
         $this->RegisterPropertyBoolean('EnableAlarm', true);
@@ -192,6 +193,7 @@ class Warnmelder extends IPSModule
         IPS_SetHidden($this->GetIDForIdent('Active'), !$this->ReadPropertyBoolean('EnableActive'));
         IPS_SetHidden($this->GetIDForIdent('Status'), !$this->ReadPropertyBoolean('EnableStatus'));
         IPS_SetHidden($this->GetIDForIdent('TriggeringDetector'), !$this->ReadPropertyBoolean('EnableTriggeringDetector'));
+        IPS_SetHidden($this->GetIDForIdent('LastUpdate'), !$this->ReadPropertyBoolean('EnableLastUpdate'));
         IPS_SetHidden($this->GetIDForIdent('UpdateStatus'), !$this->ReadPropertyBoolean('EnableUpdateStatus'));
         IPS_SetHidden($this->GetIDForIdent('AlarmSensorList'), !$this->ReadPropertyBoolean('EnableAlarmSensorList'));
 
