@@ -127,9 +127,20 @@ trait WM_Config
             'caption' => 'Funktionen',
             'items'   => [
                 [
+                    'type'    => 'Label',
+                    'caption' => 'WebFront',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'italic'  => true
+                ],
+                [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableActive',
-                    'caption' => 'Aktiv (Schalter im WebFront)'
+                    'caption' => 'Aktiv'
                 ],
                 [
                     'type'    => 'CheckBox',
@@ -143,27 +154,58 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'CheckBox',
+                    'name'    => 'EnableLastUpdate',
+                    'caption' => 'Letzte Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
                     'name'    => 'EnableUpdateStatus',
                     'caption' => 'Aktualisierung'
                 ],
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableAlarmSensorList',
-                    'caption' => 'Warnmelder'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableAlarm',
-                    'caption' => 'Warnmelder mit Alarm anzeigen'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableOK',
-                    'caption' => 'Warnmelder ohne Alarm anzeigen'
+                    'caption' => 'Warnmelderliste'
                 ],
                 [
                     'type'    => 'Label',
                     'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Warnmelderliste',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableAlarm',
+                    'caption' => 'Alarm'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableOK',
+                    'caption' => 'OK'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Warnmelderliste',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Statustexte',
+                    'italic'  => true
                 ],
                 [
                     'type'    => 'ValidationTextBox',
