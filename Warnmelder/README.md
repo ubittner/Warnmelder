@@ -32,7 +32,7 @@ Benachrichtigungen werden nur ausgelöst, wenn das Modul aktiv ist.
 
 ```
                       +-----------------------+
-                      | Warnmelder (Modul) |
+                      | Warnmelder (Modul)    |
                       |                       |
 Auslöser<-------------+ Status                |
                       +-----------------------+
