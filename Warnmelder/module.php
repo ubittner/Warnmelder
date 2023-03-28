@@ -25,7 +25,7 @@ class Warnmelder extends IPSModule
     //Constants
     private const MODULE_NAME = 'Warnmelder';
     private const MODULE_PREFIX = 'WM';
-    private const MODULE_VERSION = '1.0-4, 01.02.2023';
+    private const MODULE_VERSION = '1.0-5, 28.03.2023';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
@@ -39,17 +39,17 @@ class Warnmelder extends IPSModule
         //Info
         $this->RegisterPropertyString('Note', '');
 
-        //Functions
-        $this->RegisterPropertyBoolean('EnableActive', false);
-        $this->RegisterPropertyBoolean('EnableStatus', true);
-        $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
-        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
-        $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
-        $this->RegisterPropertyBoolean('EnableAlarmSensorList', true);
+        //Status values
+        $this->RegisterPropertyString('StatusTextOK', 'OK');
+        $this->RegisterPropertyString('StatusTextAlarm', 'Alarm');
+
+        //Sensor list
         $this->RegisterPropertyBoolean('EnableAlarm', true);
+        $this->RegisterPropertyString('SensorListStatusTextAlarm', '🔴  Alarm');
         $this->RegisterPropertyBoolean('EnableOK', true);
-        $this->RegisterPropertyString('StatusTextAlarm', '🔴 Alarm');
-        $this->RegisterPropertyString('StatusTextOK', '🟢 OK');
+        $this->RegisterPropertyString('SensorListStatusTextOK', '🟢  OK');
+
+        //Automatic status update
         $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
         $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
 
@@ -60,10 +60,17 @@ class Warnmelder extends IPSModule
         $this->RegisterPropertyString('NotificationAlarm', '[]');
         $this->RegisterPropertyString('PushNotificationAlarm', '[]');
         $this->RegisterPropertyString('MailerNotificationAlarm', '[]');
-
         $this->RegisterPropertyString('Notification', '[]');
         $this->RegisterPropertyString('PushNotification', '[]');
         $this->RegisterPropertyString('MailerNotification', '[]');
+
+        //Visualisation
+        $this->RegisterPropertyBoolean('EnableActive', false);
+        $this->RegisterPropertyBoolean('EnableStatus', true);
+        $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
+        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
+        $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
+        $this->RegisterPropertyBoolean('EnableAlarmSensorList', true);
 
         ########## Variables
 
@@ -136,6 +143,14 @@ class Warnmelder extends IPSModule
         //Check runlevel
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
+        }
+
+        //Update status profiles
+        $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.Status';
+        if (IPS_VariableProfileExists($profile)) {
+            //Set new values
+            IPS_SetVariableProfileAssociation($profile, 0, $this->ReadPropertyString('StatusTextOK'), 'Ok', 0x00FF00);
+            IPS_SetVariableProfileAssociation($profile, 1, $this->ReadPropertyString('StatusTextAlarm'), 'Warning', 0xFF0000);
         }
 
         //Delete all references

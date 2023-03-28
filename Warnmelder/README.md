@@ -40,7 +40,7 @@ Auslöser<-------------+ Status                |
 
 ### 4. Auslöser
 
-Das Modul Fensterstatus reagiert auf verschiedene Auslöser.
+Das Modul Warnmelder reagiert auf verschiedene Auslöser.
 
 ### 5. PHP-Befehlsreferenz
 

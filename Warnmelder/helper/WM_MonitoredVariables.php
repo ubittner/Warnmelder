@@ -295,7 +295,6 @@ trait WM_MonitoredVariables
             $separator = false;
             if (!empty($variables)) {
                 //Show sensors with alarm first
-                $separator = false;
                 if ($this->ReadPropertyBoolean('EnableAlarm')) {
                     foreach ($variables as $variable) {
                         $id = $variable['ID'];
@@ -420,10 +419,10 @@ trait WM_MonitoredVariables
             }
             if ($id > 1 && @IPS_ObjectExists($id)) {
                 $actualStatus = 0; //OK
-                $statusText = $this->ReadPropertyString('StatusTextOK');
+                $statusText = $this->ReadPropertyString('SensorListStatusTextOK');
                 if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
                     $actualStatus = 1; //Alarm
-                    $statusText = $this->ReadPropertyString('StatusTextAlarm');
+                    $statusText = $this->ReadPropertyString('SensorListStatusTextAlarm');
                 }
                 $result[] = [
                     'ID'           => $id,

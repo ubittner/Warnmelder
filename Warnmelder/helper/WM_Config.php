@@ -10,7 +10,6 @@
 
 /** @noinspection PhpUndefinedFunctionInspection */
 /** @noinspection DuplicatedCode */
-/** @noinspection PhpUnused */
 
 declare(strict_types=1);
 
@@ -83,7 +82,7 @@ trait WM_Config
 
         ########## Elements
 
-        //Info
+        ##### Info
         $form['elements'][0] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Info',
@@ -121,106 +120,39 @@ trait WM_Config
             ]
         ];
 
-        //Functions
+        ##### Status designations
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
-            'caption' => 'Funktionen',
+            'caption' => 'Statusbezeichnungen',
             'items'   => [
                 [
                     'type'    => 'Label',
-                    'caption' => 'WebFront',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoptionen',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableActive',
-                    'caption' => 'Aktiv'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableStatus',
-                    'caption' => 'Status'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableTriggeringDetector',
-                    'caption' => 'Auslösender Melder'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableLastUpdate',
-                    'caption' => 'Letzte Aktualisierung'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableUpdateStatus',
-                    'caption' => 'Aktualisierung'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableAlarmSensorList',
-                    'caption' => 'Warnmelderliste'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Warnmelderliste',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoptionen',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableAlarm',
-                    'caption' => 'Alarm'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableOK',
-                    'caption' => 'OK'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Warnmelderliste',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Statustexte',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'StatusTextAlarm',
-                    'caption' => 'Alarm'
+                    'caption' => 'OK',
+                    'bold'    => true
                 ],
                 [
                     'type'    => 'ValidationTextBox',
                     'name'    => 'StatusTextOK',
-                    'caption' => 'OK'
+                    'caption' => 'Bezeichnung'
                 ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Alarm',
+                    'bold'    => true
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'StatusTextAlarm',
+                    'caption' => 'Bezeichnung'
+                ]
             ]
         ];
 
-        //Trigger list
+        ##### Trigger list
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($variables as $variable) {
@@ -257,10 +189,10 @@ trait WM_Config
             $stateName = 'fehlerhaft';
             $rowColor = '#FFC0C0'; //red
             if ($conditions) {
-                $stateName = 'OK';
+                $stateName = $this->ReadPropertyString('StatusTextOK');
                 $rowColor = '#C0FFC0'; //light green
                 if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
-                    $stateName = 'Alarm';
+                    $stateName = $this->ReadPropertyString('StatusTextAlarm');
                     $rowColor = '#FFC0C0'; //red
                 }
                 if (!$variable['Use']) {
@@ -303,6 +235,13 @@ trait WM_Config
                                 'add'     => ''
                             ],
                             [
+                                'caption' => 'ID',
+                                'name'    => 'SensorID',
+                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
+                                'width'   => '100px',
+                                'add'     => ''
+                            ],
+                            [
                                 'caption' => 'Bezeichnung',
                                 'name'    => 'Designation',
                                 'width'   => '400px',
@@ -316,18 +255,11 @@ trait WM_Config
                                 'caption' => 'Bemerkung',
                                 'name'    => 'Comment',
                                 'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
-                                'width'   => '200px',
+                                'width'   => '300px',
                                 'add'     => '',
                                 'edit'    => [
                                     'type' => 'ValidationTextBox'
                                 ]
-                            ],
-                            [
-                                'caption' => 'ID',
-                                'name'    => 'SensorID',
-                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
-                                'width'   => '200px',
-                                'add'     => ''
                             ],
                             [
                                 'caption' => ' ',
@@ -405,7 +337,50 @@ trait WM_Config
                 ]
             ];
 
-        //Automatic status update
+        ##### Sensor list
+
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Warnmelderliste',
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoption Alarm',
+                    'bold'    => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableAlarm',
+                    'caption' => 'Alarm'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'SensorListStatusTextAlarm',
+                    'caption' => 'Bezeichnung'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoption OK',
+                    'bold'    => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableOK',
+                    'caption' => 'OK'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'SensorListStatusTextOK',
+                    'caption' => 'Bezeichnung'
+                ]
+            ]
+        ];
+
+        ##### Automatic status update
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Aktualisierung',
@@ -424,7 +399,9 @@ trait WM_Config
             ]
         ];
 
-        ##### Alarm values
+        ##### Notifications
+
+        ### Notification Alarm
 
         //Notification
         $notificationAlarmValues = [];
@@ -468,7 +445,7 @@ trait WM_Config
             $mailerNotificationAlarmValues[] = ['rowColor' => $rowColor];
         }
 
-        ##### OK values
+        ### Notification OK
 
         //Notification
         $notificationValues = [];
@@ -512,25 +489,23 @@ trait WM_Config
             $mailerNotificationValues[] = ['rowColor' => $rowColor];
         }
 
-        ##### Notifications
-
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Benachrichtigungen',
             'items'   => [
 
-                ##### Alarm
+                ### Alarm
 
                 [
                     'type'    => 'Label',
-                    'caption' => 'Alarm',
+                    'caption' => 'Nachricht Alarm',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'NotificationAlarm',
-                    'caption'  => 'Nachricht',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -578,7 +553,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                            'add'     => '🔴  %1$s hat einen Alarm ausgelöst!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -635,14 +610,14 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'Label',
-                    'caption' => 'Alarm',
+                    'caption' => 'Push-Nachricht Alarm',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'PushNotificationAlarm',
-                    'caption'  => 'Push-Nachricht',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -680,7 +655,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                            'add'     => '🔴  %1$s hat einen Alarm ausgelöst!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -828,14 +803,14 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'Label',
-                    'caption' => 'Alarm',
+                    'caption' => 'E-Mail Alarm',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'MailerNotificationAlarm',
-                    'caption'  => 'E-Mail',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -873,7 +848,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                            'add'     => '🔴  %1$s hat einen Alarm ausgelöst!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -918,18 +893,18 @@ trait WM_Config
                     'caption' => ' ',
                 ],
 
-                ##### OK
+                ### OK
 
                 [
                     'type'    => 'Label',
-                    'caption' => 'OK',
+                    'caption' => 'Nachricht OK',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'Notification',
-                    'caption'  => 'Nachricht',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -977,7 +952,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
+                            'add'     => '🟢  %1$s ist wieder OK!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -1034,14 +1009,14 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'Label',
-                    'caption' => 'OK',
+                    'caption' => 'Push-Nachricht OK',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'PushNotification',
-                    'caption'  => 'Push-Nachricht',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -1079,7 +1054,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
+                            'add'     => '🟢  %1$s ist wieder OK!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -1227,14 +1202,14 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'Label',
-                    'caption' => 'OK',
+                    'caption' => 'E-Mail OK',
                     'italic'  => true,
                     'bold'    => true
                 ],
                 [
                     'type'     => 'List',
                     'name'     => 'MailerNotification',
-                    'caption'  => 'E-Mail',
+                    'caption'  => ' ',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -1272,7 +1247,7 @@ trait WM_Config
                             'caption' => 'Text der Meldung (maximal 256 Zeichen)',
                             'name'    => 'Text',
                             'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
+                            'add'     => '🟢  %1$s ist wieder OK!',
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -1311,6 +1286,56 @@ trait WM_Config
                             'objectID' => 0
                         ]
                     ]
+                ]
+            ]
+        ];
+
+        ##### Visualisation
+
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Visualisierung',
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'WebFront',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableActive',
+                    'caption' => 'Aktiv'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableStatus',
+                    'caption' => 'Status'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableTriggeringDetector',
+                    'caption' => 'Auslösender Melder'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableLastUpdate',
+                    'caption' => 'Letzte Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableUpdateStatus',
+                    'caption' => 'Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableAlarmSensorList',
+                    'caption' => 'Warnmelderliste'
                 ]
             ]
         ];
