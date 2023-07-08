@@ -34,7 +34,7 @@ Benachrichtigungen werden nur ausgelöst, wenn das Modul aktiv ist.
                       +-----------------------+
                       | Warnmelder (Modul)    |
                       |                       |
-Auslöser<-------------+ Status                |
+Auslöser------------->+ Status                |
                       +-----------------------+
 ```
 
@@ -46,7 +46,7 @@ Das Modul Warnmelder reagiert auf verschiedene Auslöser.
 
 #### 5.1 Status aktualisieren
 
-```
+```text
 WM_UpdateStatus(integer INSTANCE_ID);
 ```
 
@@ -58,6 +58,7 @@ Konnte der jeweilige Befehl erfolgreich ausgeführt werden, liefert er als Ergeb
 | `INSTANCE_ID` | ID der Instanz |
 
 
-Beispiel:
-> WM_UpdateStatus(12345);
-
+**Beispiel:**
+```php
+WM_UpdateStatus(12345);
+```
