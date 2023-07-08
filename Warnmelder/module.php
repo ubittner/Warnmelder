@@ -23,9 +23,9 @@ class Warnmelder extends IPSModule
     use WM_MonitoredVariables;
 
     //Constants
-    private const MODULE_NAME = 'Warnmelder';
+    private const LIBRARY_GUID = '{70D8F340-4128-EEC8-3FCE-5C3FA449B64F}';
+    private const MODULE_GUID = '{D2516F46-D422-3393-ABF6-2ACF5CA7070B}';
     private const MODULE_PREFIX = 'WM';
-    private const MODULE_VERSION = '1.0-5, 28.03.2023';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
@@ -49,12 +49,12 @@ class Warnmelder extends IPSModule
         $this->RegisterPropertyBoolean('EnableOK', true);
         $this->RegisterPropertyString('SensorListStatusTextOK', '🟢  OK');
 
+        //Trigger list
+        $this->RegisterPropertyString('TriggerList', '[]');
+
         //Automatic status update
         $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
         $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
-
-        //Trigger list
-        $this->RegisterPropertyString('TriggerList', '[]');
 
         //Notification
         $this->RegisterPropertyString('NotificationAlarm', '[]');
@@ -279,10 +279,18 @@ class Warnmelder extends IPSModule
         $id = @IPS_CreateInstance($guid);
         if (is_int($id)) {
             IPS_SetName($id, 'Mailer');
-            echo 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
+            $infoText = 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
         } else {
-            echo 'Instanz konnte nicht erstellt werden!';
+            $infoText = 'Instanz konnte nicht erstellt werden!';
         }
+        $this->UpdateFormField('InfoMessage', 'visible', true);
+        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+    }
+
+    public function UIShowMessage(string $Message): void
+    {
+        $this->UpdateFormField('InfoMessage', 'visible', true);
+        $this->UpdateFormField('InfoMessageLabel', 'caption', $Message);
     }
 
     #################### Request action

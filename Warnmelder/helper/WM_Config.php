@@ -26,6 +26,22 @@ trait WM_Config
     }
 
     /**
+     * Expands or collapses the expansion panels.
+     *
+     * @param bool $State
+     * false =  collapse,
+     * true =   expand
+     *
+     * @return void
+     */
+    public function ExpandExpansionPanels(bool $State): void
+    {
+        for ($i = 1; $i <= 10; $i++) {
+            $this->UpdateFormField('Panel' . $i, 'expanded', $State);
+        }
+    }
+
+    /**
      * Modifies a configuration button.
      *
      * @param string $Field
@@ -82,9 +98,35 @@ trait WM_Config
 
         ########## Elements
 
-        ##### Info
-        $form['elements'][0] = [
+        //Configuration buttons
+        $form['elements'][0] =
+            [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'Button',
+                        'caption' => 'Konfiguration ausklappen',
+                        'onClick' => self::MODULE_PREFIX . '_ExpandExpansionPanels($id, true);'
+                    ],
+                    [
+                        'type'    => 'Button',
+                        'caption' => 'Konfiguration einklappen',
+                        'onClick' => self::MODULE_PREFIX . '_ExpandExpansionPanels($id, false);'
+                    ],
+                    [
+                        'type'    => 'Button',
+                        'caption' => 'Konfiguration neu laden',
+                        'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
+                    ]
+                ]
+            ];
+
+        //Info
+        $library = IPS_GetLibrary(self::LIBRARY_GUID);
+        $module = IPS_GetModule(self::MODULE_GUID);
+        $form['elements'][] = [
             'type'    => 'ExpansionPanel',
+            'name'    => 'Panel1',
             'caption' => 'Info',
             'items'   => [
                 [
@@ -94,18 +136,19 @@ trait WM_Config
                 ],
                 [
                     'type'    => 'Label',
-                    'name'    => 'ModuleDesignation',
-                    'caption' => "Modul:\t\t" . self::MODULE_NAME
+                    'caption' => "Modul:\t\t" . $module['ModuleName']
                 ],
                 [
                     'type'    => 'Label',
-                    'name'    => 'ModulePrefix',
-                    'caption' => "Präfix:\t\t" . self::MODULE_PREFIX
+                    'caption' => "Präfix:\t\t" . $module['Prefix']
                 ],
                 [
                     'type'    => 'Label',
-                    'name'    => 'ModuleVersion',
-                    'caption' => "Version:\t\t" . self::MODULE_VERSION
+                    'caption' => "Version:\t\t" . $library['Version'] . '-' . $library['Build'] . ', ' . date('d.m.Y', $library['Date'])
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => "Entwickler:\t" . $library['Author']
                 ],
                 [
                     'type'    => 'Label',
@@ -120,39 +163,76 @@ trait WM_Config
             ]
         ];
 
-        ##### Status designations
+        //Status designations
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
+            'name'    => 'Panel2',
             'caption' => 'Statusbezeichnungen',
             'items'   => [
                 [
-                    'type'    => 'Label',
-                    'caption' => 'OK',
-                    'bold'    => true
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'StatusTextAlarm',
+                    'caption' => 'Bezeichnung für Alarm'
                 ],
                 [
                     'type'    => 'ValidationTextBox',
                     'name'    => 'StatusTextOK',
-                    'caption' => 'Bezeichnung'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Alarm',
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'StatusTextAlarm',
-                    'caption' => 'Bezeichnung'
+                    'caption' => 'Bezeichnung für OK'
                 ]
             ]
         ];
 
-        ##### Trigger list
+        //Sensor list
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'name'    => 'Panel3',
+            'caption' => 'Listenoptionen',
+            'items'   => [
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+
+                        [
+                            'type'    => 'CheckBox',
+                            'name'    => 'EnableAlarm',
+                            'caption' => 'Alarm anzeigen'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' ',
+                            'width'   => '20px'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'SensorListStatusTextAlarm',
+                            'caption' => 'Bezeichnung für Alarm'
+                        ]
+                    ]
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'CheckBox',
+                            'name'    => 'EnableOK',
+                            'caption' => 'OK anzeigen'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' ',
+                            'width'   => '38px'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'SensorListStatusTextOK',
+                            'caption' => 'Bezeichnung für OK'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        //Trigger list
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($variables as $variable) {
@@ -206,11 +286,13 @@ trait WM_Config
         $form['elements'][] =
             [
                 'type'    => 'ExpansionPanel',
+                'name'    => 'Panel4',
                 'caption' => 'Auslöser',
                 'items'   => [
                     [
                         'type'     => 'List',
                         'name'     => 'TriggerList',
+                        'caption'  => 'Auslöser',
                         'rowCount' => 15,
                         'add'      => true,
                         'delete'   => true,
@@ -337,52 +419,10 @@ trait WM_Config
                 ]
             ];
 
-        ##### Sensor list
-
-        $form['elements'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Warnmelderliste',
-            'items'   => [
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoption Alarm',
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableAlarm',
-                    'caption' => 'Alarm'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'SensorListStatusTextAlarm',
-                    'caption' => 'Bezeichnung'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoption OK',
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableOK',
-                    'caption' => 'OK'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'SensorListStatusTextOK',
-                    'caption' => 'Bezeichnung'
-                ]
-            ]
-        ];
-
         ##### Automatic status update
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
+            'name'    => 'Panel5',
             'caption' => 'Aktualisierung',
             'items'   => [
                 [
@@ -491,21 +531,16 @@ trait WM_Config
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
+            'name'    => 'Panel6',
             'caption' => 'Benachrichtigungen',
             'items'   => [
 
                 ### Alarm
 
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Nachricht Alarm',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'NotificationAlarm',
-                    'caption'  => ' ',
+                    'caption'  => 'Nachricht Alarm',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -524,7 +559,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationAlarmConfigurationButton", "ID " . $NotificationAlarm["ID"] . " Instanzkonfiguration", $NotificationAlarm["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationAlarmConfigurationButton", "ID " . $NotificationAlarm["ID"] . " konfigurieren", $NotificationAlarm["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
@@ -587,20 +622,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'NotificationAlarmConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ]
                     ]
                 ],
@@ -609,15 +640,9 @@ trait WM_Config
                     'caption' => ' '
                 ],
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Push-Nachricht Alarm',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'PushNotificationAlarm',
-                    'caption'  => ' ',
+                    'caption'  => 'Push-Nachricht Alarm',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -636,7 +661,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationAlarmConfigurationButton", "ID " . $PushNotificationAlarm["ID"] . " Instanzkonfiguration", $PushNotificationAlarm["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationAlarmConfigurationButton", "ID " . $PushNotificationAlarm["ID"] . " konfigurieren", $PushNotificationAlarm["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
@@ -780,20 +805,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'PushNotificationAlarmConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ]
                     ]
                 ],
@@ -802,15 +823,9 @@ trait WM_Config
                     'caption' => ' '
                 ],
                 [
-                    'type'    => 'Label',
-                    'caption' => 'E-Mail Alarm',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'MailerNotificationAlarm',
-                    'caption'  => ' ',
+                    'caption'  => 'E-Mail Alarm',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -829,7 +844,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationAlarmConfigurationButton", "ID " . $MailerNotificationAlarm["ID"] . " Instanzkonfiguration", $MailerNotificationAlarm["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationAlarmConfigurationButton", "ID " . $MailerNotificationAlarm["ID"] . " konfigurieren", $MailerNotificationAlarm["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::MAILER_MODULE_GUID
@@ -871,20 +886,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'MailerNotificationAlarmConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ]
                     ]
                 ],
@@ -896,15 +907,9 @@ trait WM_Config
                 ### OK
 
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Nachricht OK',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'Notification',
-                    'caption'  => ' ',
+                    'caption'  => 'Nachricht OK',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -923,7 +928,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationConfigurationButton", "ID " . $Notification["ID"] . " Instanzkonfiguration", $Notification["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationConfigurationButton", "ID " . $Notification["ID"] . " konfigurieren", $Notification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
@@ -986,20 +991,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'NotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ]
                     ]
                 ],
@@ -1008,15 +1009,9 @@ trait WM_Config
                     'caption' => ' '
                 ],
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Push-Nachricht OK',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'PushNotification',
-                    'caption'  => ' ',
+                    'caption'  => 'Push-Nachricht OK',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -1035,7 +1030,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationConfigurationButton", "ID " . $PushNotification["ID"] . " Instanzkonfiguration", $PushNotification["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationConfigurationButton", "ID " . $PushNotification["ID"] . " konfigurieren", $PushNotification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
@@ -1179,20 +1174,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'PushNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ]
                     ]
                 ],
@@ -1201,15 +1192,9 @@ trait WM_Config
                     'caption' => ' '
                 ],
                 [
-                    'type'    => 'Label',
-                    'caption' => 'E-Mail OK',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
                     'type'     => 'List',
                     'name'     => 'MailerNotification',
-                    'caption'  => ' ',
+                    'caption'  => 'E-Mail OK',
                     'rowCount' => 5,
                     'add'      => true,
                     'delete'   => true,
@@ -1228,7 +1213,7 @@ trait WM_Config
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationConfigurationButton", "ID " . $MailerNotification["ID"] . " Instanzkonfiguration", $MailerNotification["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationConfigurationButton", "ID " . $MailerNotification["ID"] . " konfigurieren", $MailerNotification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::MAILER_MODULE_GUID
@@ -1270,20 +1255,16 @@ trait WM_Config
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'MailerNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0
+                        ],
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ]
                     ]
                 ]
@@ -1294,19 +1275,9 @@ trait WM_Config
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
+            'name'    => 'Panel7',
             'caption' => 'Visualisierung',
             'items'   => [
-                [
-                    'type'    => 'Label',
-                    'caption' => 'WebFront',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoptionen',
-                    'italic'  => true
-                ],
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableActive',
@@ -1342,28 +1313,193 @@ trait WM_Config
 
         ########## Actions
 
-        $form['actions'][0] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Konfiguration',
-            'items'   => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Neu laden',
-                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Auslöser'
+            ];
+
+        $form['actions'][] =
+            [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'Select',
+                        'name'    => 'VariableDeterminationType',
+                        'caption' => 'Ident / Profil',
+                        'options' => [
+                            [
+                                'caption' => 'Benutzerdefiniert Ident',
+                                'value'   => 0
+                            ],
+                            [
+                                'caption' => 'STATE',
+                                'value'   => 1
+                            ],
+                            [
+                                'caption' => 'ALARMSTATE',
+                                'value'   => 2
+                            ],
+                            [
+                                'caption' => 'SMOKE_DETECTOR_ALARM_STATUS',
+                                'value'   => 3
+                            ],
+                            [
+                                'caption' => 'ERROR_SABOTAGE, SABOTAGE',
+                                'value'   => 4
+                            ],
+                            [
+                                'caption' => 'DUTYCYCLE, DUTY_CYCLE',
+                                'value'   => 5
+                            ],
+                            [
+                                'caption' => 'Benutzerdefiniertes Profil',
+                                'value'   => 6
+                            ],
+                            [
+                                'caption' => 'Profil: ~Window',
+                                'value'   => 7
+                            ],
+                            [
+                                'caption' => 'Profil: ~Window.Reversed',
+                                'value'   => 8
+                            ],
+                            [
+                                'caption' => 'Profil: ~Window.HM',
+                                'value'   => 9
+                            ],
+                            [
+                                'caption' => 'Profil: ~Motion',
+                                'value'   => 10
+                            ],
+                            [
+                                'caption' => 'Profil: ~Motion.Reversed',
+                                'value'   => 11
+                            ],
+                            [
+                                'caption' => 'Profil: ~Motion.HM',
+                                'value'   => 12
+                            ]
+                        ],
+                        'value'    => 0,
+                        'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
+                    ],
+                    [
+                        'type'    => 'ValidationTextBox',
+                        'name'    => 'VariableDeterminationValue',
+                        'caption' => 'Identifikator',
+                        'visible' => true
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Variablen ermitteln',
+                        'popup'   => [
+                            'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Ermitteln',
+                                    'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue);'
+                                ],
+                                [
+                                    'type'    => 'ProgressBar',
+                                    'name'    => 'VariableDeterminationProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type'    => 'Label',
+                                    'name'    => 'VariableDeterminationProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
+                    ]
                 ]
-            ]
-        ];
+            ];
+
+        $form['actions'][] =
+            [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Status aktualisieren',
+                        'popup'   => [
+                            'caption' => 'Status wirklich aktualisieren?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Aktualisieren',
+                                    'onClick' => self::MODULE_PREFIX . '_UpdateStatus($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
+                                ]
+                            ],
+                            'buttons' => [
+                                [
+                                    'caption' => 'Konfiguration neu laden',
+                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Kritische Variablen zurücksetzen',
+                        'popup'   => [
+                            'caption' => 'Kritische Variablen wirklich zurücksetzen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Zurücksetzen',
+                                    'onClick' => self::MODULE_PREFIX . '_ResetCriticalVariables($id); ' . self::MODULE_PREFIX . '_UIShowMessage($id, "Variablen wurden erfolgreich zurückgesetzt!");'
+                                ]
+                            ],
+                            'buttons' => [
+                                [
+                                    'caption' => 'Konfiguration neu laden',
+                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => ' '
+            ];
 
         //Test center
-        $form['actions'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Schaltfunktionen',
-            'items'   => [
-                [
-                    'type' => 'TestCenter',
-                ]
-            ]
-        ];
+        $form['actions'][] =
+            [
+                'type' => 'TestCenter',
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => ' '
+            ];
+
+        //Registered references
+        $criticalVariables = [];
+        foreach (json_decode($this->ReadAttributeString('CriticalVariables'), true) as $criticalVariable) {
+            $name = 'Objekt #' . $criticalVariable . ' existiert nicht';
+            $rowColor = '#FFC0C0'; //red
+            if (@IPS_ObjectExists($criticalVariable)) {
+                $name = IPS_GetName($criticalVariable);
+                $rowColor = '#C0FFC0'; //light green
+            }
+            $criticalVariables[] = [
+                'ObjectID' => $criticalVariable,
+                'Name'     => $name,
+                'rowColor' => $rowColor];
+        }
 
         //Registered references
         $registeredReferences = [];
@@ -1380,44 +1516,6 @@ trait WM_Config
                 'Name'     => $name,
                 'rowColor' => $rowColor];
         }
-
-        $form['actions'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Registrierte Referenzen',
-            'items'   => [
-                [
-                    'type'     => 'List',
-                    'name'     => 'RegisteredReferences',
-                    'rowCount' => 10,
-                    'sort'     => [
-                        'column'    => 'ObjectID',
-                        'direction' => 'ascending'
-                    ],
-                    'columns' => [
-                        [
-                            'caption' => 'ID',
-                            'name'    => 'ObjectID',
-                            'width'   => '150px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
-                        ],
-                        [
-                            'caption' => 'Name',
-                            'name'    => 'Name',
-                            'width'   => '300px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
-                        ]
-                    ],
-                    'values' => $registeredReferences
-                ],
-                [
-                    'type'     => 'OpenObjectButton',
-                    'name'     => 'RegisteredReferencesConfigurationButton',
-                    'caption'  => 'Aufrufen',
-                    'visible'  => false,
-                    'objectID' => 0
-                ]
-            ]
-        ];
 
         //Registered messages
         $registeredMessages = [];
@@ -1449,13 +1547,130 @@ trait WM_Config
                 'rowColor'           => $rowColor];
         }
 
+        //Developer area
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
-            'caption' => 'Registrierte Nachrichten',
+            'caption' => 'Entwicklerbereich',
             'items'   => [
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'SelectCategory',
+                            'name'    => 'LinkCategory',
+                            'caption' => 'Kategorie',
+                            'width'   => '610px'
+                        ],
+                        [
+                            'type'    => 'PopupButton',
+                            'caption' => 'Verknüpfung erstellen',
+                            'popup'   => [
+                                'caption' => 'Variablenverknüpfungen wirklich erstellen?',
+                                'items'   => [
+                                    [
+                                        'type'    => 'Button',
+                                        'caption' => 'Erstellen',
+                                        'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory);'
+                                    ],
+                                    [
+                                        'type'    => 'ProgressBar',
+                                        'name'    => 'VariableLinkProgress',
+                                        'caption' => 'Fortschritt',
+                                        'minimum' => 0,
+                                        'maximum' => 100,
+                                        'visible' => false
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'name'    => 'VariableLinkProgressInfo',
+                                        'caption' => '',
+                                        'visible' => false
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'CriticalVariables',
+                    'caption'  => 'Kritische Variablen',
+                    'rowCount' => 10,
+                    'sort'     => [
+                        'column'    => 'ObjectID',
+                        'direction' => 'ascending'
+                    ],
+                    'columns' => [
+                        [
+                            'caption' => 'ID',
+                            'name'    => 'ObjectID',
+                            'width'   => '150px',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "CriticalVariablesConfigurationButton", "ID " . $CriticalVariables["ObjectID"] . " aufrufen", $CriticalVariables["ObjectID"]);'
+                        ],
+                        [
+                            'caption' => 'Name',
+                            'name'    => 'Name',
+                            'width'   => '300px',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "CriticalVariablesConfigurationButton", "ID " . $CriticalVariables["ObjectID"] . " aufrufen", $CriticalVariables["ObjectID"]);'
+                        ]
+                    ],
+                    'values' => $criticalVariables
+                ],
+                [
+                    'type'     => 'OpenObjectButton',
+                    'name'     => 'CriticalVariablesConfigurationButton',
+                    'caption'  => 'Aufrufen',
+                    'visible'  => false,
+                    'objectID' => 0
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'RegisteredReferences',
+                    'caption'  => 'Registrierte Referenzen',
+                    'rowCount' => 10,
+                    'sort'     => [
+                        'column'    => 'ObjectID',
+                        'direction' => 'ascending'
+                    ],
+                    'columns' => [
+                        [
+                            'caption' => 'ID',
+                            'name'    => 'ObjectID',
+                            'width'   => '150px',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
+                        ],
+                        [
+                            'caption' => 'Name',
+                            'name'    => 'Name',
+                            'width'   => '300px',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
+                        ]
+                    ],
+                    'values' => $registeredReferences
+                ],
+                [
+                    'type'     => 'OpenObjectButton',
+                    'name'     => 'RegisteredReferencesConfigurationButton',
+                    'caption'  => 'Aufrufen',
+                    'visible'  => false,
+                    'objectID' => 0
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
                 [
                     'type'     => 'List',
                     'name'     => 'RegisteredMessages',
+                    'caption'  => 'Registrierte Nachrichten',
                     'rowCount' => 10,
                     'sort'     => [
                         'column'    => 'ObjectID',
@@ -1497,154 +1712,46 @@ trait WM_Config
             ]
         ];
 
-        //Trigger
-        $form['actions'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Auslöser',
-            'items'   => [
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Auslöser',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Select',
-                            'name'    => 'SelectIdents',
-                            'options' => [
-                                [
-                                    'caption' => 'Benutzerdefiniert',
-                                    'value'   => ''
-                                ],
-                                [
-                                    'caption' => 'STATE',
-                                    'value'   => 'STATE'
-                                ],
-                                [
-                                    'caption' => 'ALARMSTATE',
-                                    'value'   => 'ALARMSTATE'
-                                ],
-                                [
-                                    'caption' => 'SMOKE_DETECTOR_ALARM_STATUS',
-                                    'value'   => 'SMOKE_DETECTOR_ALARM_STATUS'
-                                ],
-                                [
-                                    'caption' => 'ERROR_SABOTAGE, SABOTAGE',
-                                    'value'   => 'ERROR_SABOTAGE, SABOTAGE'
-                                ],
-                                [
-                                    'caption' => 'DUTYCYCLE, DUTY_CYCLE',
-                                    'value'   => 'DUTYCYCLE, DUTY_CYCLE'
-                                ]
-                            ]
-
-                        ],
-                        [
-                            'type'    => 'ValidationTextBox',
-                            'name'    => 'ObjectIdents',
-                            'caption' => 'Identifikator'
-                        ],
+        //Dummy info message
+        $form['actions'][] =
+            [
+                'type'    => 'PopupAlert',
+                'name'    => 'InfoMessage',
+                'visible' => false,
+                'popup'   => [
+                    'closeCaption' => 'OK',
+                    'items'        => [
                         [
                             'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
-                            'type'    => 'PopupButton',
-                            'caption' => 'Ermitteln',
-                            'popup'   => [
-                                'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
-                                'items'   => [
-                                    [
-                                        'type'    => 'Button',
-                                        'caption' => 'Ermitteln',
-                                        'onClick' => self::MODULE_PREFIX . '_DetermineTriggerVariables($id, $SelectIdents, $ObjectIdents);'
-                                    ]
-                                ]
-                            ]
+                            'name'    => 'InfoMessageLabel',
+                            'caption' => '',
+                            'visible' => true
                         ]
                     ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Verknüpfungen',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'SelectCategory',
-                            'name'    => 'LinkCategory',
-                            'caption' => 'Kategorie',
-                            'width'   => '600px'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
-                            'type'    => 'PopupButton',
-                            'caption' => 'Erstellen',
-                            'popup'   => [
-                                'caption' => 'Variablenverknüpfungen wirklich erstellen?',
-                                'items'   => [
-                                    [
-                                        'type'    => 'Button',
-                                        'caption' => 'Erstellen',
-                                        'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory);'
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Kritische Variablen',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Kritische Variablen zurücksetzen',
-                    'onClick' => self::MODULE_PREFIX . '_ResetCriticalVariables($id);'
                 ]
-            ]
-        ];
+            ];
 
         ########## Status
 
         $form['status'][] = [
             'code'    => 101,
             'icon'    => 'active',
-            'caption' => self::MODULE_NAME . ' wird erstellt',
+            'caption' => $module['ModuleName'] . ' wird erstellt',
         ];
         $form['status'][] = [
             'code'    => 102,
             'icon'    => 'active',
-            'caption' => self::MODULE_NAME . ' ist aktiv',
+            'caption' => $module['ModuleName'] . ' ist aktiv',
         ];
         $form['status'][] = [
             'code'    => 103,
             'icon'    => 'active',
-            'caption' => self::MODULE_NAME . ' wird gelöscht',
+            'caption' => $module['ModuleName'] . ' wird gelöscht',
         ];
         $form['status'][] = [
             'code'    => 104,
             'icon'    => 'inactive',
-            'caption' => self::MODULE_NAME . ' ist inaktiv',
+            'caption' => $module['ModuleName'] . ' ist inaktiv',
         ];
         $form['status'][] = [
             'code'    => 200,
