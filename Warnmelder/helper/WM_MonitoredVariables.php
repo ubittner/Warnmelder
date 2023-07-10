@@ -127,16 +127,27 @@ trait WM_MonitoredVariables
 
     public function CheckVariableDeterminationValue(int $VariableDeterminationType): void
     {
-        $visible = false;
+        $profileSelection = false;
+        $determinationValue = false;
+
+        //Profile selection
         if ($VariableDeterminationType == 0) {
-            $this->UpdateFormfield('VariableDeterminationValue', 'caption', 'Identifikator');
-            $visible = true;
+            $profileSelection = true;
         }
-        if ($VariableDeterminationType == 6) {
+
+        //Custom profile
+        if ($VariableDeterminationType == 7) {
             $this->UpdateFormfield('VariableDeterminationValue', 'caption', 'Profilname');
-            $visible = true;
+            $determinationValue = true;
         }
-        $this->UpdateFormfield('VariableDeterminationValue', 'visible', $visible);
+        //Custom ident
+        if ($VariableDeterminationType == 13) {
+            $this->UpdateFormfield('VariableDeterminationValue', 'caption', 'Identifikator');
+            $determinationValue = true;
+        }
+
+        $this->UpdateFormfield('ProfileSelection', 'visible', $profileSelection);
+        $this->UpdateFormfield('VariableDeterminationValue', 'visible', $determinationValue);
     }
 
     /**
@@ -147,7 +158,7 @@ trait WM_MonitoredVariables
      * @return void
      * @throws Exception
      */
-    public function DetermineVariables(int $DeterminationType, string $DeterminationValue): void
+    public function DetermineVariables(int $DeterminationType, string $DeterminationValue, string $ProfileSelection = ''): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
         $this->SendDebug(__FUNCTION__, 'Auswahl: ' . $DeterminationType, 0);
@@ -165,27 +176,17 @@ trait WM_MonitoredVariables
         $passedVariables = 0;
         foreach (@IPS_GetVariableList() as $variable) {
             switch ($DeterminationType) {
-                case 0: //Custom Ident
-                    if ($DeterminationValue == '') {
-                        $infoText = 'Abbruch, es wurde kein Identifikator angegeben!';
-                        $this->UpdateFormField('InfoMessage', 'visible', true);
-                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
-                        return;
-                    } else {
-                        $determineIdent = true;
-                    }
+                case 0: //Profile: select profile
+                case 1: //Profile: ~Window
+                case 2: //Profile: ~Window.Reversed
+                case 3: //Profile: ~Window.HM
+                case 4: //Profile: ~Motion
+                case 5: //Profile: ~Motion.Reversed
+                case 6: //Profile: ~Motion.HM
+                    $determineProfile = true;
                     break;
 
-                case 1: //Ident: STATE
-                case 2: //Ident: ALARMSTATE
-                case 3: //Ident: SMOKE_DETECTOR_ALARM_STATUS
-                case 4: //Ident: ERROR_SABOTAGE, SABOTAGE
-                case 5: //Ident: DUTYCYCLE, DUTY_CYCLE
-
-                    $determineIdent = true;
-                    break;
-
-                case 6: //Custom Profile
+                case 7: //Custom Profile
                     if ($DeterminationValue == '') {
                         $infoText = 'Abbruch, es wurde kein Profilname angegeben!';
                         $this->UpdateFormField('InfoMessage', 'visible', true);
@@ -196,14 +197,25 @@ trait WM_MonitoredVariables
                     }
                     break;
 
-                case 7: //Profile: ~Window
-                case 8: //Profile: ~Window.Reversed
-                case 9: //Profile: ~Window.HM
-                case 10: //Profile: ~Motion
-                case 11: //Profile: ~Motion.Reversed
-                case 12: //Profile: ~Motion.HM
-                    $determineProfile = true;
+                case 8: //Ident: STATE
+                case 9: //Ident: ALARMSTATE
+                case 10: //Ident: SMOKE_DETECTOR_ALARM_STATUS
+                case 11: //Ident: ERROR_SABOTAGE, SABOTAGE
+                case 12: //Ident: DUTYCYCLE, DUTY_CYCLE
+                    $determineIdent = true;
                     break;
+
+                case 13: //Custom Ident
+                    if ($DeterminationValue == '') {
+                        $infoText = 'Abbruch, es wurde kein Identifikator angegeben!';
+                        $this->UpdateFormField('InfoMessage', 'visible', true);
+                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                        return;
+                    } else {
+                        $determineIdent = true;
+                    }
+                    break;
+
             }
 
             $passedVariables++;
@@ -213,42 +225,50 @@ trait WM_MonitoredVariables
             $this->UpdateFormField('VariableDeterminationProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
             IPS_Sleep(25);
 
-            ##### Ident
+            ##### Profile
 
-            //Determine via ident
-            if ($determineIdent && !$determineProfile) {
+            //Determine via profile
+            if ($determineProfile && !$determineIdent) {
                 switch ($DeterminationType) {
-                    case 0: //Custom ident
-                        $objectIdents = $DeterminationValue;
+                    case 0: //Select profile
+                        $profileNames = $ProfileSelection;
                         break;
 
                     case 1:
-                        $objectIdents = 'STATE';
+                        $profileNames = '~Window';
                         break;
 
                     case 2:
-                        $objectIdents = 'ALARMSTATE';
+                        $profileNames = '~Window.Reversed';
                         break;
 
                     case 3:
-                        $objectIdents = 'SMOKE_DETECTOR_ALARM_STATUS';
+                        $profileNames = '~Window.HM';
                         break;
 
                     case 4:
-                        $objectIdents = 'ERROR_SABOTAGE, SABOTAGE';
+                        $profileNames = '~Motion';
                         break;
 
                     case 5:
-                        $objectIdents = 'DUTYCYCLE, DUTY_CYCLE';
+                        $profileNames = '~Motion.Reversed';
+                        break;
+
+                    case 6:
+                        $profileNames = '~Motion.HM';
+                        break;
+
+                    case 7: //Custom profile
+                        $profileNames = $DeterminationValue;
                         break;
 
                 }
-                if (isset($objectIdents)) {
-                    $objectIdents = str_replace(' ', '', $objectIdents);
-                    $objectIdents = explode(',', $objectIdents);
-                    foreach ($objectIdents as $objectIdent) {
-                        $object = @IPS_GetObject($variable);
-                        if ($object['ObjectIdent'] == $objectIdent) {
+                if (isset($profileNames)) {
+                    $profileNames = str_replace(' ', '', $profileNames);
+                    $profileNames = explode(',', $profileNames);
+                    foreach ($profileNames as $profileName) {
+                        $variableData = IPS_GetVariable($variable);
+                        if ($variableData['VariableCustomProfile'] == $profileName || $variableData['VariableProfile'] == $profileName) {
                             $name = @IPS_GetName($variable);
                             $address = '';
                             $parent = @IPS_GetParent($variable);
@@ -299,46 +319,42 @@ trait WM_MonitoredVariables
                 }
             }
 
-            ##### Profile
+            ##### Ident
 
-            //Determine via profile
-            if ($determineProfile && !$determineIdent) {
+            //Determine via ident
+            if ($determineIdent && !$determineProfile) {
                 switch ($DeterminationType) {
-                    case 6: //Custom ident
-                        $profileNames = $DeterminationValue;
-                        break;
-
-                    case 7:
-                        $profileNames = '~Window';
-                        break;
-
                     case 8:
-                        $profileNames = '~Window.Reversed';
+                        $objectIdents = 'STATE';
                         break;
 
                     case 9:
-                        $profileNames = '~Window.HM';
+                        $objectIdents = 'ALARMSTATE';
                         break;
 
                     case 10:
-                        $profileNames = '~Motion';
+                        $objectIdents = 'SMOKE_DETECTOR_ALARM_STATUS';
                         break;
 
                     case 11:
-                        $profileNames = '~Motion.Reversed';
+                        $objectIdents = 'ERROR_SABOTAGE, SABOTAGE';
                         break;
 
                     case 12:
-                        $profileNames = '~Motion.HM';
+                        $objectIdents = 'DUTYCYCLE, DUTY_CYCLE';
+                        break;
+
+                    case 13: //Custom ident
+                        $objectIdents = $DeterminationValue;
                         break;
 
                 }
-                if (isset($profileNames)) {
-                    $profileNames = str_replace(' ', '', $profileNames);
-                    $profileNames = explode(',', $profileNames);
-                    foreach ($profileNames as $profileName) {
-                        $variableData = IPS_GetVariable($variable);
-                        if ($variableData['VariableCustomProfile'] == $profileName || $variableData['VariableProfile'] == $profileName) {
+                if (isset($objectIdents)) {
+                    $objectIdents = str_replace(' ', '', $objectIdents);
+                    $objectIdents = explode(',', $objectIdents);
+                    foreach ($objectIdents as $objectIdent) {
+                        $object = @IPS_GetObject($variable);
+                        if ($object['ObjectIdent'] == $objectIdent) {
                             $name = @IPS_GetName($variable);
                             $address = '';
                             $parent = @IPS_GetParent($variable);
