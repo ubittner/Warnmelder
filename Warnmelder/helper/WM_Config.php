@@ -1329,66 +1329,76 @@ trait WM_Config
                         'caption' => 'Ident / Profil',
                         'options' => [
                             [
-                                'caption' => 'Benutzerdefiniert Ident',
+                                'caption' => 'Profil auswählen',
                                 'value'   => 0
                             ],
                             [
-                                'caption' => 'STATE',
+                                'caption' => 'Profil: ~Window',
                                 'value'   => 1
                             ],
                             [
-                                'caption' => 'ALARMSTATE',
+                                'caption' => 'Profil: ~Window.Reversed',
                                 'value'   => 2
                             ],
                             [
-                                'caption' => 'SMOKE_DETECTOR_ALARM_STATUS',
+                                'caption' => 'Profil: ~Window.HM',
                                 'value'   => 3
                             ],
                             [
-                                'caption' => 'ERROR_SABOTAGE, SABOTAGE',
+                                'caption' => 'Profil: ~Motion',
                                 'value'   => 4
                             ],
                             [
-                                'caption' => 'DUTYCYCLE, DUTY_CYCLE',
+                                'caption' => 'Profil: ~Motion.Reversed',
                                 'value'   => 5
                             ],
                             [
-                                'caption' => 'Benutzerdefiniertes Profil',
+                                'caption' => 'Profil: ~Motion.HM',
                                 'value'   => 6
                             ],
                             [
-                                'caption' => 'Profil: ~Window',
+                                'caption' => 'Benutzerdefiniertes Profil',
                                 'value'   => 7
                             ],
                             [
-                                'caption' => 'Profil: ~Window.Reversed',
+                                'caption' => 'Ident: STATE',
                                 'value'   => 8
                             ],
                             [
-                                'caption' => 'Profil: ~Window.HM',
+                                'caption' => 'Ident: ALARMSTATE',
                                 'value'   => 9
                             ],
                             [
-                                'caption' => 'Profil: ~Motion',
+                                'caption' => 'Ident: SMOKE_DETECTOR_ALARM_STATUS',
                                 'value'   => 10
                             ],
                             [
-                                'caption' => 'Profil: ~Motion.Reversed',
+                                'caption' => 'Ident: ERROR_SABOTAGE, SABOTAGE',
                                 'value'   => 11
                             ],
                             [
-                                'caption' => 'Profil: ~Motion.HM',
+                                'caption' => 'Ident: DUTYCYCLE, DUTY_CYCLE',
                                 'value'   => 12
+                            ],
+                            [
+                                'caption' => 'Benutzerdefiniert Ident',
+                                'value'   => 13
                             ]
                         ],
                         'value'    => 0,
                         'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
                     ],
                     [
+                        'type'    => 'SelectProfile',
+                        'name'    => 'ProfileSelection',
+                        'caption' => 'Profil',
+                        'visible' => true
+                    ],
+                    [
                         'type'    => 'ValidationTextBox',
                         'name'    => 'VariableDeterminationValue',
                         'caption' => 'Identifikator',
-                        'visible' => true
+                        'visible' => false
                     ],
                     [
                         'type'    => 'PopupButton',
@@ -1399,7 +1409,7 @@ trait WM_Config
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Ermitteln',
-                                    'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue);'
+                                    'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue, $ProfileSelection);'
                                 ],
                                 [
                                     'type'    => 'ProgressBar',
