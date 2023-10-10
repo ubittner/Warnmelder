@@ -155,6 +155,7 @@ trait WM_MonitoredVariables
      *
      * @param int $DeterminationType
      * @param string $DeterminationValue
+     * @param string $ProfileSelection
      * @return void
      * @throws Exception
      */
@@ -177,6 +178,16 @@ trait WM_MonitoredVariables
         foreach (@IPS_GetVariableList() as $variable) {
             switch ($DeterminationType) {
                 case 0: //Profile: select profile
+                    if ($ProfileSelection == '') {
+                        $infoText = 'Abbruch, es wurde kein Profil ausgewählt!';
+                        $this->UpdateFormField('InfoMessage', 'visible', true);
+                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                        return;
+                    } else {
+                        $determineProfile = true;
+                    }
+                    break;
+
                 case 1: //Profile: ~Window
                 case 2: //Profile: ~Window.Reversed
                 case 3: //Profile: ~Window.HM
