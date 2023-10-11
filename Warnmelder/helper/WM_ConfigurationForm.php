@@ -13,7 +13,7 @@
 
 declare(strict_types=1);
 
-trait WM_Config
+trait WM_ConfigurationForm
 {
     /**
      * Reloads the configuration form.
@@ -237,6 +237,7 @@ trait WM_Config
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($variables as $variable) {
             $sensorID = 0;
+            $variableLocation = '';
             if ($variable['PrimaryCondition'] != '') {
                 $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                 if (array_key_exists(0, $primaryCondition)) {
@@ -250,6 +251,7 @@ trait WM_Config
             if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
                 $conditions = false;
             }
+            $variableLocation = IPS_GetLocation($sensorID);
             if ($variable['SecondaryCondition'] != '') {
                 $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
                 if (array_key_exists(0, $secondaryConditions)) {
@@ -280,7 +282,7 @@ trait WM_Config
                     $rowColor = '#DFDFDF'; //grey
                 }
             }
-            $triggerListValues[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'rowColor' => $rowColor];
+            $triggerListValues[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
         }
 
         $form['elements'][] =
@@ -297,7 +299,7 @@ trait WM_Config
                         'add'      => true,
                         'delete'   => true,
                         'sort'     => [
-                            'column'    => 'Designation',
+                            'column'    => 'ActualStatus',
                             'direction' => 'ascending'
                         ],
                         'columns' => [
@@ -324,7 +326,14 @@ trait WM_Config
                                 'add'     => ''
                             ],
                             [
-                                'caption' => 'Bezeichnung',
+                                'caption' => 'Objektbaum',
+                                'name'    => 'VariableLocation',
+                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
+                                'width'   => '350px',
+                                'add'     => ''
+                            ],
+                            [
+                                'caption' => 'Name',
                                 'name'    => 'Designation',
                                 'width'   => '400px',
                                 'add'     => '',
@@ -1482,6 +1491,12 @@ trait WM_Config
             [
                 'type'    => 'Label',
                 'caption' => ' '
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Schaltelemente'
             ];
 
         //Test center

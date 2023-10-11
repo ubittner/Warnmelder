@@ -18,7 +18,7 @@ include_once __DIR__ . '/helper/WM_autoload.php';
 class Warnmelder extends IPSModule
 {
     //Helper
-    use WM_Config;
+    use WM_ConfigurationForm;
     use WM_Notifications;
     use WM_MonitoredVariables;
 
