@@ -194,18 +194,12 @@ trait WM_ConfigurationForm
 
                         [
                             'type'    => 'CheckBox',
-                            'name'    => 'EnableAlarm',
-                            'caption' => 'Alarm anzeigen'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' ',
-                            'width'   => '20px'
+                            'name'    => 'EnableAlarm'
                         ],
                         [
                             'type'    => 'ValidationTextBox',
                             'name'    => 'SensorListStatusTextAlarm',
-                            'caption' => 'Bezeichnung für Alarm'
+                            'caption' => 'Alarm'
                         ]
                     ]
                 ],
@@ -214,18 +208,12 @@ trait WM_ConfigurationForm
                     'items' => [
                         [
                             'type'    => 'CheckBox',
-                            'name'    => 'EnableOK',
-                            'caption' => 'OK anzeigen'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' ',
-                            'width'   => '38px'
+                            'name'    => 'EnableOK'
                         ],
                         [
                             'type'    => 'ValidationTextBox',
                             'name'    => 'SensorListStatusTextOK',
-                            'caption' => 'Bezeichnung für OK'
+                            'caption' => 'OK'
                         ]
                     ]
                 ]
@@ -235,6 +223,7 @@ trait WM_ConfigurationForm
         //Trigger list
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        $amount = count($variables);
         foreach ($variables as $variable) {
             $sensorID = 0;
             $variableLocation = '';
@@ -251,7 +240,6 @@ trait WM_ConfigurationForm
             if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
                 $conditions = false;
             }
-            $variableLocation = IPS_GetLocation($sensorID);
             if ($variable['SecondaryCondition'] != '') {
                 $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
                 if (array_key_exists(0, $secondaryConditions)) {
@@ -271,6 +259,7 @@ trait WM_ConfigurationForm
             $stateName = 'fehlerhaft';
             $rowColor = '#FFC0C0'; //red
             if ($conditions) {
+                $variableLocation = IPS_GetLocation($sensorID);
                 $stateName = $this->ReadPropertyString('StatusTextOK');
                 $rowColor = '#C0FFC0'; //light green
                 if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
@@ -295,7 +284,7 @@ trait WM_ConfigurationForm
                         'type'     => 'List',
                         'name'     => 'TriggerList',
                         'caption'  => 'Auslöser',
-                        'rowCount' => 15,
+                        'rowCount' => $amount,
                         'add'      => true,
                         'delete'   => true,
                         'sort'     => [
@@ -1333,88 +1322,84 @@ trait WM_ConfigurationForm
                 'type'  => 'RowLayout',
                 'items' => [
                     [
-                        'type'    => 'Select',
-                        'name'    => 'VariableDeterminationType',
-                        'caption' => 'Ident / Profil',
-                        'options' => [
-                            [
-                                'caption' => 'Profil auswählen',
-                                'value'   => 0
-                            ],
-                            [
-                                'caption' => 'Profil: ~Window',
-                                'value'   => 1
-                            ],
-                            [
-                                'caption' => 'Profil: ~Window.Reversed',
-                                'value'   => 2
-                            ],
-                            [
-                                'caption' => 'Profil: ~Window.HM',
-                                'value'   => 3
-                            ],
-                            [
-                                'caption' => 'Profil: ~Motion',
-                                'value'   => 4
-                            ],
-                            [
-                                'caption' => 'Profil: ~Motion.Reversed',
-                                'value'   => 5
-                            ],
-                            [
-                                'caption' => 'Profil: ~Motion.HM',
-                                'value'   => 6
-                            ],
-                            [
-                                'caption' => 'Profil: Benutzerdefiniert',
-                                'value'   => 7
-                            ],
-                            [
-                                'caption' => 'Ident: STATE',
-                                'value'   => 8
-                            ],
-                            [
-                                'caption' => 'Ident: ALARMSTATE',
-                                'value'   => 9
-                            ],
-                            [
-                                'caption' => 'Ident: SMOKE_DETECTOR_ALARM_STATUS',
-                                'value'   => 10
-                            ],
-                            [
-                                'caption' => 'Ident: ERROR_SABOTAGE, SABOTAGE',
-                                'value'   => 11
-                            ],
-                            [
-                                'caption' => 'Ident: DUTYCYCLE, DUTY_CYCLE',
-                                'value'   => 12
-                            ],
-                            [
-                                'caption' => 'Ident: Benutzerdefiniert',
-                                'value'   => 13
-                            ]
-                        ],
-                        'value'    => 0,
-                        'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
-                    ],
-                    [
-                        'type'    => 'SelectProfile',
-                        'name'    => 'ProfileSelection',
-                        'caption' => 'Profil',
-                        'visible' => true
-                    ],
-                    [
-                        'type'    => 'ValidationTextBox',
-                        'name'    => 'VariableDeterminationValue',
-                        'caption' => 'Identifikator',
-                        'visible' => false
-                    ],
-                    [
                         'type'    => 'PopupButton',
                         'caption' => 'Variablen ermitteln',
                         'popup'   => [
                             'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
                             'items'   => [
+                                [
+                                    'type'    => 'Select',
+                                    'name'    => 'VariableDeterminationType',
+                                    'caption' => 'Auswahl',
+                                    'options' => [
+                                        [
+                                            'caption' => 'Profil auswählen',
+                                            'value'   => 0
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Window',
+                                            'value'   => 1
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Window.Reversed',
+                                            'value'   => 2
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Window.HM',
+                                            'value'   => 3
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Motion',
+                                            'value'   => 4
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Motion.Reversed',
+                                            'value'   => 5
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Motion.HM',
+                                            'value'   => 6
+                                        ],
+                                        [
+                                            'caption' => 'Ident: STATE',
+                                            'value'   => 7
+                                        ],
+                                        [
+                                            'caption' => 'Ident: ALARMSTATE',
+                                            'value'   => 8
+                                        ],
+                                        [
+                                            'caption' => 'Ident: SMOKE_DETECTOR_ALARM_STATUS',
+                                            'value'   => 9
+                                        ],
+                                        [
+                                            'caption' => 'Ident: ERROR_SABOTAGE, SABOTAGE',
+                                            'value'   => 10
+                                        ],
+                                        [
+                                            'caption' => 'Ident: DUTYCYCLE, DUTY_CYCLE',
+                                            'value'   => 11
+                                        ],
+                                        [
+                                            'caption' => 'Ident: Benutzerdefiniert',
+                                            'value'   => 12
+                                        ]
+                                    ],
+                                    'value'    => 0,
+                                    'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
+                                ],
+                                [
+                                    'type'    => 'SelectProfile',
+                                    'name'    => 'ProfileSelection',
+                                    'caption' => 'Profil',
+                                    'visible' => true
+                                ],
+                                [
+                                    'type'    => 'ValidationTextBox',
+                                    'name'    => 'VariableDeterminationValue',
+                                    'caption' => 'Identifikator',
+                                    'visible' => false
+                                ],
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Ermitteln',
@@ -1433,17 +1418,52 @@ trait WM_ConfigurationForm
                                     'name'    => 'VariableDeterminationProgressInfo',
                                     'caption' => '',
                                     'visible' => false
+                                ],
+                                [
+                                    'type'     => 'List',
+                                    'name'     => 'DeterminedVariableList',
+                                    'caption'  => 'Variablen',
+                                    'visible'  => false,
+                                    'rowCount' => 15,
+                                    'delete'   => true,
+                                    'sort'     => [
+                                        'column'    => 'ID',
+                                        'direction' => 'ascending'
+                                    ],
+                                    'columns'  => [
+                                        [
+                                            'caption' => 'Übernehmen',
+                                            'name'    => 'Use',
+                                            'width'   => '100px',
+                                            'add'     => true,
+                                            'edit'    => [
+                                                'type' => 'CheckBox'
+                                            ]
+                                        ],
+                                        [
+                                            'name'    => 'ID',
+                                            'caption' => 'ID',
+                                            'width'   => '80px',
+                                            'add'     => ''
+                                        ],
+                                        [
+                                            'caption' => 'Objektbaum',
+                                            'name'    => 'Location',
+                                            'width'   => '800px',
+                                            'add'     => ''
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'name'    => 'ApplyPreTriggerValues',
+                                    'caption' => 'Übernehmen',
+                                    'visible' => false,
+                                    'onClick' => self::MODULE_PREFIX . '_ApplyDeterminedVariables($id, $DeterminedVariableList);'
                                 ]
                             ]
                         ]
-                    ]
-                ]
-            ];
-
-        $form['actions'][] =
-            [
-                'type'  => 'RowLayout',
-                'items' => [
+                    ],
                     [
                         'type'    => 'PopupButton',
                         'caption' => 'Status aktualisieren',
