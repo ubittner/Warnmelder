@@ -489,6 +489,76 @@ trait WM_MonitoredVariables
     }
 
     /**
+     * Deletes an element from an attribute.
+     *
+     * @param string $AttributeName
+     * @param int $VariableID
+     * @return void
+     * @throws Exception
+     */
+    public function DeleteElementFromAttribute(string $AttributeName, int $VariableID): void
+    {
+        $elements = json_decode($this->ReadAttributeString($AttributeName), true);
+        foreach ($elements as $key => $element) {
+            if ($element == $VariableID) {
+                unset($elements[$key]);
+            }
+        }
+        $elements = array_values($elements);
+        $this->WriteAttributeString($AttributeName, json_encode($elements));
+    }
+
+    /**
+     * Cleans up an attribute.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function CleanUpAttributes(): void
+    {
+        $attributes = ['CriticalVariables'];
+        foreach ($attributes as $attribute) {
+            $elements = json_decode($this->ReadAttributeString($attribute), true);
+            foreach ($elements as $key => $element) {
+                $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+                $exists = false;
+                foreach ($monitoredVariables as $monitoredVariable) {
+                    if ($monitoredVariable['Use']) {
+                        if ($monitoredVariable['PrimaryCondition'] != '') {
+                            $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                            if (array_key_exists(0, $primaryCondition)) {
+                                if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                    $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                    if ($monitoredVariableID == $element) {
+                                        $exists = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!$exists) {
+                    unset($elements[$key]);
+                }
+            }
+            $elements = array_values($elements);
+            $this->WriteAttributeString($attribute, json_encode($elements));
+        }
+    }
+
+    /**
+     * Shows an attribute.
+     *
+     * @param string $AttributeName
+     * @return void
+     * @throws Exception
+     */
+    public function ShowAttribute(string $AttributeName): void
+    {
+        print_r(json_decode($this->ReadAttributeString($AttributeName), true));
+    }
+
+    /**
      * Updates the status.
      *
      * @return bool

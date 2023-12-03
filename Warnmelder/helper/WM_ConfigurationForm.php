@@ -443,7 +443,12 @@ trait WM_ConfigurationForm
 
         //Notification
         $notificationAlarmValues = [];
-        foreach (json_decode($this->ReadPropertyString('NotificationAlarm'), true) as $element) {
+        $notificationAlarm = json_decode($this->ReadPropertyString('NotificationAlarm'), true);
+        $amountNotificationAlarm = count($notificationAlarm);
+        if ($amountNotificationAlarm == 0) {
+            $amountNotificationAlarm = 1;
+        }
+        foreach ($notificationAlarm as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -457,7 +462,12 @@ trait WM_ConfigurationForm
 
         //Push notification
         $pushNotificationAlarmValues = [];
-        foreach (json_decode($this->ReadPropertyString('PushNotificationAlarm'), true) as $element) {
+        $pushNotificationAlarm = json_decode($this->ReadPropertyString('PushNotificationAlarm'), true);
+        $amountPushNotificationAlarm = count($pushNotificationAlarm);
+        if ($amountPushNotificationAlarm == 0) {
+            $amountPushNotificationAlarm = 1;
+        }
+        foreach ($pushNotificationAlarm as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -471,7 +481,12 @@ trait WM_ConfigurationForm
 
         //Mailer
         $mailerNotificationAlarmValues = [];
-        foreach (json_decode($this->ReadPropertyString('MailerNotificationAlarm'), true) as $element) {
+        $mailerNotificationAlarm = json_decode($this->ReadPropertyString('MailerNotificationAlarm'), true);
+        $amountMailerNotificationAlarm = count($mailerNotificationAlarm);
+        if ($amountMailerNotificationAlarm == 0) {
+            $amountMailerNotificationAlarm = 1;
+        }
+        foreach ($mailerNotificationAlarm as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -487,7 +502,12 @@ trait WM_ConfigurationForm
 
         //Notification
         $notificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('Notification'), true) as $element) {
+        $notification = json_decode($this->ReadPropertyString('Notification'), true);
+        $amountNotification = count($notification);
+        if ($amountNotification == 0) {
+            $amountNotification = 1;
+        }
+        foreach ($notification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -501,7 +521,12 @@ trait WM_ConfigurationForm
 
         //Push notification
         $pushNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('PushNotification'), true) as $element) {
+        $pushNotification = json_decode($this->ReadPropertyString('PushNotification'), true);
+        $amountPushNotification = count($pushNotification);
+        if ($amountPushNotification == 0) {
+            $amountPushNotification = 1;
+        }
+        foreach ($pushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -515,7 +540,12 @@ trait WM_ConfigurationForm
 
         //Mailer
         $mailerNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('MailerNotification'), true) as $element) {
+        $mailerNotification = json_decode($this->ReadPropertyString('MailerNotification'), true);
+        $amountMailerNotification = count($mailerNotification);
+        if ($amountMailerNotification == 0) {
+            $amountMailerNotification = 1;
+        }
+        foreach ($mailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
@@ -539,7 +569,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'NotificationAlarm',
                     'caption'  => 'Nachricht Alarm',
-                    'rowCount' => 5,
+                    'rowCount' => $amountNotificationAlarm,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -641,7 +671,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'PushNotificationAlarm',
                     'caption'  => 'Push-Nachricht Alarm',
-                    'rowCount' => 5,
+                    'rowCount' => $amountPushNotificationAlarm,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -824,7 +854,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'MailerNotificationAlarm',
                     'caption'  => 'E-Mail Alarm',
-                    'rowCount' => 5,
+                    'rowCount' => $amountMailerNotificationAlarm,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -908,7 +938,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'Notification',
                     'caption'  => 'Nachricht OK',
-                    'rowCount' => 5,
+                    'rowCount' => $amountNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1010,7 +1040,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'PushNotification',
                     'caption'  => 'Push-Nachricht OK',
-                    'rowCount' => 5,
+                    'rowCount' => $amountPushNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1193,7 +1223,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'MailerNotification',
                     'caption'  => 'E-Mail OK',
-                    'rowCount' => 5,
+                    'rowCount' => $amountMailerNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1533,7 +1563,12 @@ trait WM_ConfigurationForm
 
         //Registered references
         $criticalVariables = [];
-        foreach (json_decode($this->ReadAttributeString('CriticalVariables'), true) as $criticalVariable) {
+        $existingCriticalVariables = json_decode($this->ReadAttributeString('CriticalVariables'), true);
+        $amountCriticalVariables = count($existingCriticalVariables);
+        if ($amountCriticalVariables == 0) {
+            $amountCriticalVariables = 1;
+        }
+        foreach ($existingCriticalVariables as $criticalVariable) {
             $name = 'Objekt #' . $criticalVariable . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
             if (@IPS_ObjectExists($criticalVariable)) {
@@ -1549,6 +1584,10 @@ trait WM_ConfigurationForm
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
+        $amountReferences = count($references);
+        if ($amountReferences == 0) {
+            $amountReferences = 1;
+        }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
@@ -1565,6 +1604,10 @@ trait WM_ConfigurationForm
         //Registered messages
         $registeredMessages = [];
         $messages = $this->GetMessageList();
+        $amountMessages = count($messages);
+        if ($amountMessages == 0) {
+            $amountMessages = 1;
+        }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
@@ -1644,7 +1687,11 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'CriticalVariables',
                     'caption'  => 'Kritische Variablen',
-                    'rowCount' => 10,
+
+                    'delete'   => true,
+                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "CriticalVariables", $CriticalVariables["ObjectID"]);',
+
+                    'rowCount' => $amountCriticalVariables,
                     'sort'     => [
                         'column'    => 'ObjectID',
                         'direction' => 'ascending'
@@ -1680,7 +1727,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'RegisteredReferences',
                     'caption'  => 'Registrierte Referenzen',
-                    'rowCount' => 10,
+                    'rowCount' => $amountReferences,
                     'sort'     => [
                         'column'    => 'ObjectID',
                         'direction' => 'ascending'
@@ -1716,7 +1763,7 @@ trait WM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'RegisteredMessages',
                     'caption'  => 'Registrierte Nachrichten',
-                    'rowCount' => 10,
+                    'rowCount' => $amountMessages,
                     'sort'     => [
                         'column'    => 'ObjectID',
                         'direction' => 'ascending'

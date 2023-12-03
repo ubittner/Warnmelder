@@ -219,6 +219,8 @@ class Warnmelder extends IPSModule
         }
         $this->SetTimerInterval('StatusUpdate', $milliseconds);
 
+        $this->CleanUpAttributes();
+
         //Update status
         $this->UpdateStatus();
     }
