@@ -86,6 +86,17 @@ trait WM_ConfigurationForm
         $this->UpdateFormField($Field, 'objectID', $id);
     }
 
+    public function ModifyActualVariableStatesVariableButton(string $Field, int $VariableID): void
+    {
+        $state = false;
+        if ($VariableID > 1 && @IPS_ObjectExists($VariableID)) { //0 = main category, 1 = none
+            $state = true;
+        }
+        $this->UpdateFormField($Field, 'caption', 'ID ' . $VariableID . ' Bearbeiten');
+        $this->UpdateFormField($Field, 'visible', $state);
+        $this->UpdateFormField($Field, 'objectID', $VariableID);
+    }
+
     /**
      * Gets the configuration form.
      *
@@ -256,22 +267,15 @@ trait WM_ConfigurationForm
                     }
                 }
             }
-            $stateName = 'fehlerhaft';
             $rowColor = '#FFC0C0'; //red
             if ($conditions) {
                 $variableLocation = IPS_GetLocation($sensorID);
-                $stateName = $this->ReadPropertyString('StatusTextOK');
                 $rowColor = '#C0FFC0'; //light green
-                if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
-                    $stateName = $this->ReadPropertyString('StatusTextAlarm');
-                    $rowColor = '#FFC0C0'; //red
-                }
                 if (!$variable['Use']) {
-                    $stateName = 'deaktiviert';
                     $rowColor = '#DFDFDF'; //grey
                 }
             }
-            $triggerListValues[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
+            $triggerListValues[] = ['SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
         }
 
         $form['elements'][] =
@@ -281,6 +285,68 @@ trait WM_ConfigurationForm
                 'caption' => 'Auslöser',
                 'items'   => [
                     [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Aktueller Status',
+                        'popup'   => [
+                            'caption' => 'Aktueller Status',
+                            'items'   => [
+                                [
+                                    'type'     => 'List',
+                                    'name'     => 'ActualVariableStates',
+                                    'caption'  => 'Variablen',
+                                    'add'      => false,
+                                    'visible'  => false,
+                                    'rowCount' => 1,
+                                    'sort'     => [
+                                        'column'    => 'ActualStatus',
+                                        'direction' => 'ascending'
+                                    ],
+                                    'columns'  => [
+                                        [
+                                            'name'    => 'ActualStatus',
+                                            'caption' => 'Aktueller Status',
+                                            'width'   => '150px',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'SensorID',
+                                            'caption' => 'ID',
+                                            'width'   => '80px',
+                                            'onClick' => self::MODULE_PREFIX . '_ModifyActualVariableStatesVariableButton($id, "ActualVariableStatesConfigurationButton", $ActualVariableStates["SensorID"]);',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'VariableLocation',
+                                            'caption' => 'Objektbaum',
+                                            'width'   => '600px',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'Designation',
+                                            'caption' => 'Name',
+                                            'width'   => '400px',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'Comment',
+                                            'caption' => 'Bemerkung',
+                                            'width'   => '400px',
+                                            'save'    => false
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'ActualVariableStatesConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ],
+                            ]
+                        ],
+                        'onClick' => self::MODULE_PREFIX . '_GetActualVariableStates($id);'
+                    ],
+                    [
                         'type'     => 'List',
                         'name'     => 'TriggerList',
                         'caption'  => 'Auslöser',
@@ -288,7 +354,7 @@ trait WM_ConfigurationForm
                         'add'      => true,
                         'delete'   => true,
                         'sort'     => [
-                            'column'    => 'ActualStatus',
+                            'column'    => 'SensorID',
                             'direction' => 'ascending'
                         ],
                         'columns' => [
@@ -302,31 +368,25 @@ trait WM_ConfigurationForm
                                 ]
                             ],
                             [
-                                'name'    => 'ActualStatus',
-                                'caption' => 'Aktueller Status',
-                                'width'   => '150px',
-                                'add'     => ''
-                            ],
-                            [
                                 'caption' => 'ID',
                                 'name'    => 'SensorID',
                                 'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                                 'width'   => '100px',
-                                'add'     => ''
+                                'add'     => '',
+                                'save'    => false
                             ],
                             [
                                 'caption' => 'Objektbaum',
                                 'name'    => 'VariableLocation',
-                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                                 'width'   => '350px',
-                                'add'     => ''
+                                'add'     => '',
+                                'save'    => false
                             ],
                             [
                                 'caption' => 'Name',
                                 'name'    => 'Designation',
                                 'width'   => '400px',
                                 'add'     => '',
-                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                                 'edit'    => [
                                     'type' => 'ValidationTextBox'
                                 ]
@@ -334,7 +394,6 @@ trait WM_ConfigurationForm
                             [
                                 'caption' => 'Bemerkung',
                                 'name'    => 'Comment',
-                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                                 'width'   => '300px',
                                 'add'     => '',
                                 'edit'    => [
@@ -347,6 +406,7 @@ trait WM_ConfigurationForm
                                 'width'   => '200px',
                                 'add'     => '',
                                 'visible' => false,
+                                'save'    => false,
                                 'edit'    => [
                                     'type' => 'Label'
                                 ]
@@ -357,6 +417,7 @@ trait WM_ConfigurationForm
                                 'width'   => '200px',
                                 'add'     => '',
                                 'visible' => false,
+                                'save'    => false,
                                 'edit'    => [
                                     'type' => 'Label',
                                     'bold' => true
@@ -378,6 +439,7 @@ trait WM_ConfigurationForm
                                 'width'   => '200px',
                                 'add'     => '',
                                 'visible' => false,
+                                'save'    => false,
                                 'edit'    => [
                                     'type' => 'Label'
                                 ]
@@ -388,6 +450,7 @@ trait WM_ConfigurationForm
                                 'width'   => '200px',
                                 'add'     => '',
                                 'visible' => false,
+                                'save'    => false,
                                 'edit'    => [
                                     'type' => 'Label',
                                     'bold' => true

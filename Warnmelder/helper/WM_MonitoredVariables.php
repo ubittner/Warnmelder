@@ -9,6 +9,7 @@
  */
 
 /** @noinspection PhpUndefinedFunctionInspection */
+/** @noinspection SpellCheckingInspection */
 /** @noinspection DuplicatedCode */
 /** @noinspection PhpUnused */
 
@@ -268,7 +269,7 @@ trait WM_MonitoredVariables
                         if ($variableData['VariableCustomProfile'] == $profileName || $variableData['VariableProfile'] == $profileName) {
                             $location = @IPS_GetLocation($variable);
                             $determinedVariables[] = [
-                                'Use'      => true,
+                                'Use'      => false,
                                 'ID'       => $variable,
                                 'Location' => $location];
                         }
@@ -314,7 +315,7 @@ trait WM_MonitoredVariables
                         if ($object['ObjectIdent'] == $objectIdent) {
                             $location = @IPS_GetLocation($variable);
                             $determinedVariables[] = [
-                                'Use'      => true,
+                                'Use'      => false,
                                 'ID'       => $variable,
                                 'Location' => $location];
                         }
@@ -366,6 +367,74 @@ trait WM_MonitoredVariables
         $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
         $this->UpdateFormField('OverwriteVariableProfiles', 'visible', true);
         $this->UpdateFormField('ApplyPreTriggerValues', 'visible', true);
+    }
+
+    /**
+     * Gets the actual variable states
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function GetActualVariableStates(): void
+    {
+        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->UpdateFormField('ActualVariableStatesConfigurationButton', 'visible', false);
+        $actualVariableStates = [];
+        $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($variables as $variable) {
+            $sensorID = 0;
+            $variableLocation = '';
+            if ($variable['PrimaryCondition'] != '') {
+                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                if (array_key_exists(0, $primaryCondition)) {
+                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                        $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                    }
+                }
+            }
+            //Check conditions first
+            $conditions = true;
+            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
+                $conditions = false;
+            }
+            if ($variable['SecondaryCondition'] != '') {
+                $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
+                if (array_key_exists(0, $secondaryConditions)) {
+                    if (array_key_exists('rules', $secondaryConditions[0])) {
+                        $rules = $secondaryConditions[0]['rules']['variable'];
+                        foreach ($rules as $rule) {
+                            if (array_key_exists('variableID', $rule)) {
+                                $id = $rule['variableID'];
+                                if ($id <= 1 || !@IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                                    $conditions = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $variableDesignation = $variable['Designation'];
+            $variableComment = $variable['Comment'];
+            $stateName = 'fehlerhaft';
+            if ($conditions) {
+                $variableLocation = IPS_GetLocation($sensorID);
+                $stateName = $this->ReadPropertyString('SensorListStatusTextOK');
+                if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
+                    $stateName = $this->ReadPropertyString('SensorListStatusTextAlarm');
+                }
+                if (!$variable['Use']) {
+                    continue;
+                }
+            }
+            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'Designation' => $variableDesignation, 'Comment' => $variableComment]; //, 'rowColor' => $rowColor];
+        }
+        $amount = count($actualVariableStates);
+        if ($amount == 0) {
+            $amount = 1;
+        }
+        $this->UpdateFormField('ActualVariableStates', 'visible', true);
+        $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
+        $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualVariableStates));
     }
 
     /**
