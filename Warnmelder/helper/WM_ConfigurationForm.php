@@ -305,7 +305,7 @@ trait WM_ConfigurationForm
                                         [
                                             'name'    => 'ActualStatus',
                                             'caption' => 'Aktueller Status',
-                                            'width'   => '150px',
+                                            'width'   => '200px',
                                             'save'    => false
                                         ],
                                         [
