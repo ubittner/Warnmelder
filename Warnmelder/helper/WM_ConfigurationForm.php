@@ -316,12 +316,6 @@ trait WM_ConfigurationForm
                                             'save'    => false
                                         ],
                                         [
-                                            'name'    => 'VariableLocation',
-                                            'caption' => 'Objektbaum',
-                                            'width'   => '600px',
-                                            'save'    => false
-                                        ],
-                                        [
                                             'name'    => 'Designation',
                                             'caption' => 'Name',
                                             'width'   => '400px',
@@ -1704,20 +1698,26 @@ trait WM_ConfigurationForm
             'caption' => 'Entwicklerbereich',
             'items'   => [
                 [
+                    'type'    => 'Label',
+                    'caption' => 'Auslöser',
+                    'italic'  => true,
+                    'bold'    => true
+                ],
+                [
                     'type'  => 'RowLayout',
                     'items' => [
-                        [
-                            'type'    => 'SelectCategory',
-                            'name'    => 'LinkCategory',
-                            'caption' => 'Kategorie',
-                            'width'   => '610px'
-                        ],
                         [
                             'type'    => 'PopupButton',
                             'caption' => 'Verknüpfung erstellen',
                             'popup'   => [
                                 'caption' => 'Variablenverknüpfungen wirklich erstellen?',
                                 'items'   => [
+                                    [
+                                        'type'    => 'SelectCategory',
+                                        'name'    => 'LinkCategory',
+                                        'caption' => 'Kategorie',
+                                        'width'   => '610px'
+                                    ],
                                     [
                                         'type'    => 'Button',
                                         'caption' => 'Erstellen',
@@ -1747,10 +1747,14 @@ trait WM_ConfigurationForm
                     'caption' => ' '
                 ],
                 [
+                    'type'     => 'Label',
+                    'caption'  => 'Kritische Variablen',
+                    'italic'   => true,
+                    'bold'     => true
+                ],
+                [
                     'type'     => 'List',
                     'name'     => 'CriticalVariables',
-                    'caption'  => 'Kritische Variablen',
-
                     'delete'   => true,
                     'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "CriticalVariables", $CriticalVariables["ObjectID"]);',
 
@@ -1787,9 +1791,14 @@ trait WM_ConfigurationForm
                     'caption' => ' '
                 ],
                 [
+                    'type'    => 'Label',
+                    'caption' => 'Registrierte Referenzen',
+                    'italic'  => true,
+                    'bold'    => true
+                ],
+                [
                     'type'     => 'List',
                     'name'     => 'RegisteredReferences',
-                    'caption'  => 'Registrierte Referenzen',
                     'rowCount' => $amountReferences,
                     'sort'     => [
                         'column'    => 'ObjectID',
@@ -1823,9 +1832,14 @@ trait WM_ConfigurationForm
                     'caption' => ' '
                 ],
                 [
+                    'type'    => 'Label',
+                    'caption' => 'Registrierte Nachrichten',
+                    'italic'  => true,
+                    'bold'    => true
+                ],
+                [
                     'type'     => 'List',
                     'name'     => 'RegisteredMessages',
-                    'caption'  => 'Registrierte Nachrichten',
                     'rowCount' => $amountMessages,
                     'sort'     => [
                         'column'    => 'ObjectID',

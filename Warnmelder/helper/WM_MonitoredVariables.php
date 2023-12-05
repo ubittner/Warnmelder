@@ -383,7 +383,6 @@ trait WM_MonitoredVariables
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($variables as $variable) {
             $sensorID = 0;
-            $variableLocation = '';
             if ($variable['PrimaryCondition'] != '') {
                 $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                 if (array_key_exists(0, $primaryCondition)) {
@@ -417,7 +416,6 @@ trait WM_MonitoredVariables
             $variableComment = $variable['Comment'];
             $stateName = 'fehlerhaft';
             if ($conditions) {
-                $variableLocation = IPS_GetLocation($sensorID);
                 $stateName = $this->ReadPropertyString('SensorListStatusTextOK');
                 if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
                     $stateName = $this->ReadPropertyString('SensorListStatusTextAlarm');
@@ -426,7 +424,7 @@ trait WM_MonitoredVariables
                     continue;
                 }
             }
-            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'Designation' => $variableDesignation, 'Comment' => $variableComment]; //, 'rowColor' => $rowColor];
+            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment];
         }
         $amount = count($actualVariableStates);
         if ($amount == 0) {
