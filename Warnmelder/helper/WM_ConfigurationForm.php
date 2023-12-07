@@ -326,6 +326,12 @@ trait WM_ConfigurationForm
                                             'caption' => 'Bemerkung',
                                             'width'   => '400px',
                                             'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'LastUpdate',
+                                            'caption' => 'Letzte Aktualisierung',
+                                            'width'   => '200px',
+                                            'save'    => false
                                         ]
                                     ]
                                 ],

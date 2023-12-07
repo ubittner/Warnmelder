@@ -412,19 +412,23 @@ trait WM_MonitoredVariables
                     }
                 }
             }
-            $variableDesignation = $variable['Designation'];
-            $variableComment = $variable['Comment'];
-            $stateName = 'fehlerhaft';
             if ($conditions) {
+                if (!$variable['Use']) {
+                    continue;
+                }
                 $stateName = $this->ReadPropertyString('SensorListStatusTextOK');
                 if (IPS_IsConditionPassing($variable['PrimaryCondition']) && IPS_IsConditionPassing($variable['SecondaryCondition'])) {
                     $stateName = $this->ReadPropertyString('SensorListStatusTextAlarm');
                 }
-                if (!$variable['Use']) {
-                    continue;
+                $variableDesignation = $variable['Designation'];
+                $variableComment = $variable['Comment'];
+                $variableUpdate = IPS_GetVariable($sensorID)['VariableUpdated']; //timestamp or 0 = never
+                $lastUpdate = 'Nie';
+                if ($variableUpdate != 0) {
+                    $lastUpdate = date('d.m.Y H:i:s', $variableUpdate);
                 }
+                $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment, 'LastUpdate' => $lastUpdate];
             }
-            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment];
         }
         $amount = count($actualVariableStates);
         if ($amount == 0) {
