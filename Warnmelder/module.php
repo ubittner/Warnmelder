@@ -1,14 +1,15 @@
 <?php
 
 /**
- * @project       Warnmelder/Warnmelder
+ * @project       Warnmelder/Warnmelder/
  * @file          module.php
  * @author        Ulrich Bittner
- * @copyright     2022 Ulrich Bittner
+ * @copyright     2023 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
 /** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection SpellCheckingInspection */
 /** @noinspection PhpUnused */
 
 declare(strict_types=1);
@@ -43,18 +44,19 @@ class Warnmelder extends IPSModule
         $this->RegisterPropertyString('StatusTextOK', 'OK');
         $this->RegisterPropertyString('StatusTextAlarm', 'Alarm');
 
-        //Sensor list
+        //List options
+        $this->RegisterPropertyString('ListDesignation', 'Warnmelderliste');
         $this->RegisterPropertyBoolean('EnableAlarm', true);
-        $this->RegisterPropertyString('SensorListStatusTextAlarm', '🔴  Alarm');
+        $this->RegisterPropertyString('SensorListStatusTextAlarm', '🔴 Alarm');
         $this->RegisterPropertyBoolean('EnableOK', true);
-        $this->RegisterPropertyString('SensorListStatusTextOK', '🟢  OK');
+        $this->RegisterPropertyString('SensorListStatusTextOK', '🟢 OK');
 
         //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');
 
         //Automatic status update
         $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
-        $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
+        $this->RegisterPropertyInteger('StatusUpdateInterval', 900);
 
         //Notification
         $this->RegisterPropertyString('NotificationAlarm', '[]');
@@ -152,6 +154,9 @@ class Warnmelder extends IPSModule
             IPS_SetVariableProfileAssociation($profile, 0, $this->ReadPropertyString('StatusTextOK'), 'Ok', 0x00FF00);
             IPS_SetVariableProfileAssociation($profile, 1, $this->ReadPropertyString('StatusTextAlarm'), 'Warning', 0xFF0000);
         }
+
+        //Update status list name
+        IPS_SetName($this->GetIDForIdent('AlarmSensorList'), $this->ReadPropertyString('ListDesignation'));
 
         //Delete all references
         foreach ($this->GetReferenceList() as $referenceID) {
