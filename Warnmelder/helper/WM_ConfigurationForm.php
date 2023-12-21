@@ -1580,6 +1580,9 @@ trait WM_ConfigurationForm
         $registeredReferences = [];
         $references = $this->GetReferenceList();
         $amountReferences = count($references);
+        if ($amountReferences == 0) {
+            $amountReferences = 3;
+        }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
             $location = '';
@@ -1600,6 +1603,9 @@ trait WM_ConfigurationForm
         $registeredMessages = [];
         $messages = $this->GetMessageList();
         $amountMessages = count($messages);
+        if ($amountMessages == 0) {
+            $amountMessages = 3;
+        }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
             $location = '';
