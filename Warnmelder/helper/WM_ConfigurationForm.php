@@ -241,6 +241,9 @@ trait WM_ConfigurationForm
         $variableLinksListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         $amountRows = count($variables) + 1;
+        if ($amountRows == 1) {
+            $amountRows = 3;
+        }
         $amountVariables = count($variables);
         foreach ($variables as $variable) {
             $sensorID = 0;
