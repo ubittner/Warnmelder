@@ -1579,15 +1579,18 @@ trait WM_ConfigurationForm
         $amountReferences = count($references);
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
+            $location = '';
             $rowColor = '#FFC0C0'; //red
             if (@IPS_ObjectExists($reference)) {
                 $name = IPS_GetName($reference);
+                $location = IPS_GetLocation($reference);
                 $rowColor = '#C0FFC0'; //light green
             }
             $registeredReferences[] = [
-                'ObjectID' => $reference,
-                'Name'     => $name,
-                'rowColor' => $rowColor];
+                'ObjectID'         => $reference,
+                'Name'             => $name,
+                'VariableLocation' => $location,
+                'rowColor'         => $rowColor];
         }
 
         //Registered messages
@@ -1596,9 +1599,11 @@ trait WM_ConfigurationForm
         $amountMessages = count($messages);
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
+            $location = '';
             $rowColor = '#FFC0C0'; //red
             if (@IPS_ObjectExists($id)) {
                 $name = IPS_GetName($id);
+                $location = IPS_GetLocation($id);
                 $rowColor = '#C0FFC0'; //light green
             }
             switch ($messageID) {
@@ -1616,6 +1621,7 @@ trait WM_ConfigurationForm
             $registeredMessages[] = [
                 'ObjectID'           => $id,
                 'Name'               => $name,
+                'VariableLocation'   => $location,
                 'MessageID'          => $messageID,
                 'MessageDescription' => $messageDescription,
                 'rowColor'           => $rowColor];
