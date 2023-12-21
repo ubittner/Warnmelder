@@ -1717,6 +1717,11 @@ trait WM_ConfigurationForm
                             'name'    => 'Name',
                             'width'   => '300px',
                             'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " bearbeiten", $RegisteredReferences["ObjectID"]);'
+                        ],
+                        [
+                            'caption' => 'Objektbaum',
+                            'name'    => 'VariableLocation',
+                            'width'   => '700px'
                         ]
                     ],
                     'values' => $registeredReferences
@@ -1758,6 +1763,11 @@ trait WM_ConfigurationForm
                             'name'    => 'Name',
                             'width'   => '300px',
                             'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " bearbeiten", $RegisteredMessages["ObjectID"]);'
+                        ],
+                        [
+                            'caption' => 'Objektbaum',
+                            'name'    => 'VariableLocation',
+                            'width'   => '700px'
                         ],
                         [
                             'caption' => 'Nachrichten ID',
