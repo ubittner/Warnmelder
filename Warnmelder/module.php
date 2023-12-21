@@ -273,10 +273,12 @@ class Warnmelder extends IPSModule
             case 'WebFront':
             case 'WebFrontPush':
                 $guid = self::WEBFRONT_MODULE_GUID;
+                $name = 'WebFront';
                 break;
 
             case 'Mailer':
                 $guid = self::MAILER_MODULE_GUID;
+                $name = 'Mailer';
                 break;
 
             default:
@@ -285,7 +287,7 @@ class Warnmelder extends IPSModule
         $this->SendDebug(__FUNCTION__, 'Guid: ' . $guid, 0);
         $id = @IPS_CreateInstance($guid);
         if (is_int($id)) {
-            IPS_SetName($id, 'Mailer');
+            IPS_SetName($id, $name);
             $infoText = 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
         } else {
             $infoText = 'Instanz konnte nicht erstellt werden!';
