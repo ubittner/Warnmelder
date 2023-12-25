@@ -423,7 +423,6 @@ trait WM_ConfigurationForm
                                     'name'     => 'ActualVariableStates',
                                     'caption'  => 'Variablen',
                                     'add'      => false,
-                                    'visible'  => false,
                                     'rowCount' => 1,
                                     'sort'     => [
                                         'column'    => 'ActualStatus',
@@ -1659,7 +1658,6 @@ trait WM_ConfigurationForm
                                 'caption'  => 'Kritische Auslöser',
                                 'rowCount' => 1,
                                 'add'      => false,
-                                'visible'  => false,
                                 'delete'   => true,
                                 'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "CriticalVariables", $CriticalVariableList["ObjectID"]);',
                                 'sort'     => [

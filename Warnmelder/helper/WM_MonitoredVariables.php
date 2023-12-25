@@ -398,7 +398,6 @@ trait WM_MonitoredVariables
         if ($amount == 0) {
             $amount = 1;
         }
-        $this->UpdateFormField('ActualVariableStates', 'visible', true);
         $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualVariableStates));
     }
@@ -926,7 +925,6 @@ trait WM_MonitoredVariables
         }
         $this->UpdateFormField('CriticalVariableList', 'rowCount', $amount);
         $this->UpdateFormField('CriticalVariableList', 'values', json_encode($criticalVariableListValue));
-        $this->UpdateFormField('CriticalVariableList', 'visible', true);
     }
 
     #################### Private
