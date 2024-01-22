@@ -2134,6 +2134,10 @@ trait WM_ConfigurationForm
             case 'PushNotificationAlarm':
             case 'PostNotificationAlarm':
             case 'MailerNotificationAlarm':
+            case 'Notification':
+            case 'PushNotification':
+            case 'PostNotification':
+            case 'MailerNotification':
                 $elements = json_decode($this->ReadPropertyString($ListName), true);
                 foreach ($elements as $element) {
                     $rowColor = '#C0FFC0'; //light green
