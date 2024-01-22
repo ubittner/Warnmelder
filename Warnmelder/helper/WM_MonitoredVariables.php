@@ -4,7 +4,7 @@
  * @project       Warnmelder/Warnmelder/helper/
  * @file          WM_MonitoredVariables.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -827,6 +827,8 @@ trait WM_MonitoredVariables
                         $this->SendNotification(1, $variable['Name']);
                         //Push notification
                         $this->SendPushNotification(1, $variable['Name']);
+                        //Post notification
+                        $this->SendPostNotification(1, $variable['Name']);
                         //Mailer notification
                         $this->SendMailerNotification(1, $variable['Name']);
                     }
@@ -841,6 +843,8 @@ trait WM_MonitoredVariables
                         $this->SendNotification(0, $variable['Name']);
                         //Push notification
                         $this->SendPushNotification(0, $variable['Name']);
+                        //Post notification
+                        $this->SendPostNotification(0, $variable['Name']);
                         //Mailer notification
                         $this->SendMailerNotification(0, $variable['Name']);
                     }

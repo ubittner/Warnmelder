@@ -4,7 +4,7 @@
  * @project       Warnmelder/Warnmelder/helper/
  * @file          WM_Notifications.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -95,6 +95,50 @@ trait WM_Notifications
             //Text length max 256 characters
             $text = substr($text, 0, 256);
             $scriptText = 'WFC_PushNotification(' . $id . ', "' . $title . '", "' . $text . '", "' . $element['Sound'] . '", ' . $element['TargetID'] . ');';
+            IPS_RunScriptText($scriptText);
+        }
+    }
+
+    /**
+     * Sends a post notification for the new tile visualisation.
+     *
+     * @param int $NotificationType
+     * 0 =  OK
+     * 1 =  Alarm
+     *
+     * @param string $DetectorName
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function SendPostNotification(int $NotificationType, string $DetectorName): void
+    {
+        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        if ($this->CheckMaintenance()) {
+            return;
+        }
+        $elements = $this->ReadPropertyString('PostNotification');
+        if ($NotificationType == 1) {
+            $elements = $this->ReadPropertyString('PostNotificationAlarm');
+        }
+        foreach (json_decode($elements, true) as $element) {
+            if (!$element['Use']) {
+                continue;
+            }
+            $id = $element['ID'];
+            if ($id <= 1 || @!IPS_ObjectExists($id)) {
+                continue;
+            }
+            //Title length max 32 characters
+            $title = substr($element['Title'], 0, 32);
+            //Text
+            $text = "\n" . sprintf($element['Text'], $DetectorName);
+            if ($element['UseTimestamp']) {
+                $text = $text . ' ' . date('d.m.Y, H:i:s');
+            }
+            //Text length max 256 characters
+            $text = substr($text, 0, 256);
+            $scriptText = 'VISU_PostNotificationEx(' . $id . ', "' . $title . '", "' . $text . '", "' . $element['Icon'] . '", "' . $element['Sound'] . '", ' . $element['TargetID'] . ');';
             IPS_RunScriptText($scriptText);
         }
     }

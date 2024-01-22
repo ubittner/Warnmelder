@@ -4,7 +4,7 @@
  * @project       Warnmelder/Warnmelder/
  * @file          module.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -28,6 +28,7 @@ class Warnmelder extends IPSModule
     private const MODULE_GUID = '{D2516F46-D422-3393-ABF6-2ACF5CA7070B}';
     private const MODULE_PREFIX = 'WM';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
+    private const TILE_VISUALISATION_MODULE_GUID = '{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
     public function Create()
@@ -61,9 +62,11 @@ class Warnmelder extends IPSModule
         //Notification
         $this->RegisterPropertyString('NotificationAlarm', '[]');
         $this->RegisterPropertyString('PushNotificationAlarm', '[]');
+        $this->RegisterPropertyString('PostNotificationAlarm', '[]');
         $this->RegisterPropertyString('MailerNotificationAlarm', '[]');
         $this->RegisterPropertyString('Notification', '[]');
         $this->RegisterPropertyString('PushNotification', '[]');
+        $this->RegisterPropertyString('PostNotification', '[]');
         $this->RegisterPropertyString('MailerNotification', '[]');
 
         //Visualisation
@@ -172,6 +175,28 @@ class Warnmelder extends IPSModule
             }
         }
 
+        //Register notifications
+        $names = [
+            'NotificationAlarm',
+            'PushNotificationAlarm',
+            'PostNotificationAlarm',
+            'MailerNotificationAlarm',
+            'Notification',
+            'PushNotification',
+            'PostNotification',
+            'MailerNotification'];
+        foreach ($names as $name) {
+            foreach (json_decode($this->ReadPropertyString($name), true) as $element) {
+                if ($element['Use']) {
+                    $id = $element['ID'];
+                    if ($id > 1 && @IPS_ObjectExists($id)) {
+                        $this->RegisterReference($id);
+                    }
+                }
+            }
+        }
+
+        //Register trigger list
         $triggerVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($triggerVariables as $variable) {
             if (!$variable['Use']) {
@@ -274,6 +299,11 @@ class Warnmelder extends IPSModule
             case 'WebFrontPush':
                 $guid = self::WEBFRONT_MODULE_GUID;
                 $name = 'WebFront';
+                break;
+
+            case 'TileVisualisation':
+                $guid = self::TILE_VISUALISATION_MODULE_GUID;
+                $name = 'Kachel Visualisierung';
                 break;
 
             case 'Mailer':

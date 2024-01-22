@@ -4,7 +4,7 @@
  * @project       Warnmelder/Warnmelder/helper/
  * @file          WM_ConfigurationForm.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -237,56 +237,6 @@ trait WM_ConfigurationForm
         ];
 
         //Trigger list
-        $triggerListValues = [];
-        $variableLinksListValues = [];
-        $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $amountRows = count($variables) + 1;
-        if ($amountRows == 1) {
-            $amountRows = 3;
-        }
-        $amountVariables = count($variables);
-        foreach ($variables as $variable) {
-            $sensorID = 0;
-            if ($variable['PrimaryCondition'] != '') {
-                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                if (array_key_exists(0, $primaryCondition)) {
-                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                        $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                    }
-                }
-            }
-            //Check conditions first
-            $conditions = true;
-            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
-                $conditions = false;
-            }
-            if ($variable['SecondaryCondition'] != '') {
-                $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
-                if (array_key_exists(0, $secondaryConditions)) {
-                    if (array_key_exists('rules', $secondaryConditions[0])) {
-                        $rules = $secondaryConditions[0]['rules']['variable'];
-                        foreach ($rules as $rule) {
-                            if (array_key_exists('variableID', $rule)) {
-                                $id = $rule['variableID'];
-                                if ($id <= 1 || !@IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                                    $conditions = false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            $rowColor = '#FFC0C0'; //red
-            if ($conditions) {
-                $rowColor = '#C0FFC0'; //light green
-                if (!$variable['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $triggerListValues[] = ['rowColor' => $rowColor];
-            $variableLinksListValues[] = ['SensorID' => $sensorID, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
-        }
-
         $form['elements'][] =
             [
                 'type'    => 'ExpansionPanel',
@@ -477,7 +427,7 @@ trait WM_ConfigurationForm
                         'type'     => 'List',
                         'name'     => 'TriggerList',
                         'caption'  => 'Auslöser',
-                        'rowCount' => $amountRows,
+                        'rowCount' => $this->CountRows('TriggerList'),
                         'add'      => true,
                         'delete'   => true,
                         'sort'     => [
@@ -533,11 +483,11 @@ trait WM_ConfigurationForm
                                 ]
                             ]
                         ],
-                        'values' => $triggerListValues,
+                        'values' => $this->GetListValues('TriggerList'),
                     ],
                     [
                         'type'    => 'Label',
-                        'caption' => 'Anzahl Auslöser: ' . $amountVariables
+                        'caption' => 'Anzahl Auslöser: ' . $this->CountElements('TriggerList')
                     ],
                     [
                         'type'    => 'PopupButton',
@@ -556,7 +506,7 @@ trait WM_ConfigurationForm
                                     'name'     => 'VariableLinkList',
                                     'caption'  => 'Variablen',
                                     'add'      => false,
-                                    'rowCount' => $amountVariables,
+                                    'rowCount' => $this->CountElements('TriggerList'),
                                     'sort'     => [
                                         'column'    => 'Designation',
                                         'direction' => 'ascending'
@@ -590,7 +540,7 @@ trait WM_ConfigurationForm
                                             'save'    => false
                                         ]
                                     ],
-                                    'values' => $variableLinksListValues,
+                                    'values' => $this->GetListValues('VariableLinkList'),
                                 ],
                                 [
                                     'type'    => 'Button',
@@ -624,7 +574,7 @@ trait WM_ConfigurationForm
                 ]
             ];
 
-        ##### Automatic status update
+        //Automatic status update
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel5',
@@ -644,126 +594,7 @@ trait WM_ConfigurationForm
             ]
         ];
 
-        ##### Notifications
-
-        ### Notification Alarm
-
-        //Notification
-        $notificationAlarmValues = [];
-        $notificationAlarm = json_decode($this->ReadPropertyString('NotificationAlarm'), true);
-        $amountNotificationAlarm = count($notificationAlarm) + 1;
-        if ($amountNotificationAlarm == 1) {
-            $amountNotificationAlarm = 3;
-        }
-        foreach ($notificationAlarm as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $notificationAlarmValues[] = ['rowColor' => $rowColor];
-        }
-
-        //Push notification
-        $pushNotificationAlarmValues = [];
-        $pushNotificationAlarm = json_decode($this->ReadPropertyString('PushNotificationAlarm'), true);
-        $amountPushNotificationAlarm = count($pushNotificationAlarm) + 1;
-        if ($amountPushNotificationAlarm == 1) {
-            $amountPushNotificationAlarm = 3;
-        }
-        foreach ($pushNotificationAlarm as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $pushNotificationAlarmValues[] = ['rowColor' => $rowColor];
-        }
-
-        //Mailer
-        $mailerNotificationAlarmValues = [];
-        $mailerNotificationAlarm = json_decode($this->ReadPropertyString('MailerNotificationAlarm'), true);
-        $amountMailerNotificationAlarm = count($mailerNotificationAlarm) + 1;
-        if ($amountMailerNotificationAlarm == 1) {
-            $amountMailerNotificationAlarm = 3;
-        }
-        foreach ($mailerNotificationAlarm as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $mailerNotificationAlarmValues[] = ['rowColor' => $rowColor];
-        }
-
-        ### Notification OK
-
-        //Notification
-        $notificationValues = [];
-        $notification = json_decode($this->ReadPropertyString('Notification'), true);
-        $amountNotification = count($notification) + 1;
-        if ($amountNotification == 1) {
-            $amountNotification = 3;
-        }
-        foreach ($notification as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $notificationValues[] = ['rowColor' => $rowColor];
-        }
-
-        //Push notification
-        $pushNotificationValues = [];
-        $pushNotification = json_decode($this->ReadPropertyString('PushNotification'), true);
-        $amountPushNotification = count($pushNotification) + 1;
-        if ($amountPushNotification == 1) {
-            $amountPushNotification = 3;
-        }
-        foreach ($pushNotification as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $pushNotificationValues[] = ['rowColor' => $rowColor];
-        }
-
-        //Mailer
-        $mailerNotificationValues = [];
-        $mailerNotification = json_decode($this->ReadPropertyString('MailerNotification'), true);
-        $amountMailerNotification = count($mailerNotification) + 1;
-        if ($amountMailerNotification == 1) {
-            $amountMailerNotification = 3;
-        }
-        foreach ($mailerNotification as $element) {
-            $rowColor = '#FFC0C0'; //red
-            $id = $element['ID'];
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $rowColor = '#C0FFC0'; //light green
-                if (!$element['Use']) {
-                    $rowColor = '#DFDFDF'; //grey
-                }
-            }
-            $mailerNotificationValues[] = ['rowColor' => $rowColor];
-        }
-
+        //Notifications
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel6',
@@ -771,752 +602,1124 @@ trait WM_ConfigurationForm
             'items'   => [
                 ### Alarm
                 [
-                    'type'    => 'Label',
+                    'type'    => 'ExpansionPanel',
                     'caption' => 'Alarm',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'NotificationAlarm',
-                    'caption'  => 'Nachricht Alarm',
-                    'rowCount' => $amountNotificationAlarm,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
+                    'items'   => [
                         [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationAlarmConfigurationButton", "ID " . $NotificationAlarm["ID"] . " konfigurieren", $NotificationAlarm["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::WEBFRONT_MODULE_GUID
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'Icon',
-                            'width'   => '200px',
-                            'add'     => 'Warning',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'Title',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'DisplayDuration',
-                            'width'   => '200px',
-                            'add'     => 0,
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ]
-                    ],
-                    'values' => $notificationAlarmValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'NotificationAlarmConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'PushNotificationAlarm',
-                    'caption'  => 'Push-Nachricht Alarm',
-                    'rowCount' => $amountPushNotificationAlarm,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationAlarmConfigurationButton", "ID " . $PushNotificationAlarm["ID"] . " konfigurieren", $PushNotificationAlarm["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::WEBFRONT_MODULE_GUID
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'Title',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'Sound',
-                            'width'   => '200px',
-                            'add'     => 'alarm',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
+                            'type'     => 'List',
+                            'name'     => 'NotificationAlarm',
+                            'caption'  => 'Nachricht',
+                            'rowCount' => $this->CountRows('NotificationAlarm'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
                                     ]
+                                ],
+                                [
+                                    'caption' => 'WebFront',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationAlarmConfigurationButton", "ID " . $NotificationAlarm["ID"] . " konfigurieren", $NotificationAlarm["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::WEBFRONT_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Icon',
+                                    'name'    => 'Icon',
+                                    'width'   => '200px',
+                                    'add'     => 'Warning',
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'SelectIcon'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Anzeigedauer',
+                                    'name'    => 'DisplayDuration',
+                                    'width'   => '200px',
+                                    'add'     => 0,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type'   => 'NumberSpinner',
+                                        'suffix' => 'Sekunden'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('NotificationAlarm'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'NotificationAlarmConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
                                 ]
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
-                            'name'    => 'TargetID',
-                            'width'   => '200px',
-                            'add'     => 0,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ]
-                    ],
-                    'values' => $pushNotificationAlarmValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                            'type'    => 'Label',
+                            'caption' => ' '
                         ],
                         [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'PushNotificationAlarmConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
+                            'type'     => 'List',
+                            'name'     => 'PushNotificationAlarm',
+                            'caption'  => 'Push-Nachricht',
+                            'rowCount' => $this->CountRows('PushNotificationAlarm'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'WebFront',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationAlarmConfigurationButton", "ID " . $PushNotificationAlarm["ID"] . " konfigurieren", $PushNotificationAlarm["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::WEBFRONT_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Sound',
+                                    'name'    => 'Sound',
+                                    'width'   => '200px',
+                                    'add'     => 'alarm',
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type'    => 'Select',
+                                        'options' => [
+                                            [
+                                                'caption' => 'Standard',
+                                                'value'   => ''
+                                            ],
+                                            [
+                                                'caption' => 'Alarm',
+                                                'value'   => 'alarm'
+                                            ],
+                                            [
+                                                'caption' => 'Bell',
+                                                'value'   => 'bell'
+                                            ],
+                                            [
+                                                'caption' => 'Boom',
+                                                'value'   => 'boom'
+                                            ],
+                                            [
+                                                'caption' => 'Buzzer',
+                                                'value'   => 'buzzer'
+                                            ],
+                                            [
+                                                'caption' => 'Connected',
+                                                'value'   => 'connected'
+                                            ],
+                                            [
+                                                'caption' => 'Dark',
+                                                'value'   => 'dark'
+                                            ],
+                                            [
+                                                'caption' => 'Digital',
+                                                'value'   => 'digital'
+                                            ],
+                                            [
+                                                'caption' => 'Drums',
+                                                'value'   => 'drums'
+                                            ],
+                                            [
+                                                'caption' => 'Duck',
+                                                'value'   => 'duck'
+                                            ],
+                                            [
+                                                'caption' => 'Full',
+                                                'value'   => 'full'
+                                            ],
+                                            [
+                                                'caption' => 'Happy',
+                                                'value'   => 'happy'
+                                            ],
+                                            [
+                                                'caption' => 'Horn',
+                                                'value'   => 'horn'
+                                            ],
+                                            [
+                                                'caption' => 'Inception',
+                                                'value'   => 'inception'
+                                            ],
+                                            [
+                                                'caption' => 'Kazoo',
+                                                'value'   => 'kazoo'
+                                            ],
+                                            [
+                                                'caption' => 'Roll',
+                                                'value'   => 'roll'
+                                            ],
+                                            [
+                                                'caption' => 'Siren',
+                                                'value'   => 'siren'
+                                            ],
+                                            [
+                                                'caption' => 'Space',
+                                                'value'   => 'space'
+                                            ],
+                                            [
+                                                'caption' => 'Trickling',
+                                                'value'   => 'trickling'
+                                            ],
+                                            [
+                                                'caption' => 'Turn',
+                                                'value'   => 'turn'
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Ziel ID',
+                                    'name'    => 'TargetID',
+                                    'width'   => '200px',
+                                    'add'     => 1,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'SelectObject'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('PushNotificationAlarm'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'PushNotificationAlarmConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ]
+                            ]
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'List',
+                            'name'     => 'PostNotificationAlarm',
+                            'caption'  => 'Post-Nachricht',
+                            'rowCount' => $this->CountRows('PostNotificationAlarm'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Kachel Visualisierung',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PostNotificationAlarmConfigurationButton", "ID " . $PostNotificationAlarm["ID"] . " konfigurieren", $PostNotificationAlarm["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Aktualisierungsmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '150px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Icon',
+                                    'name'    => 'Icon',
+                                    'width'   => '200px',
+                                    'add'     => 'Warning',
+                                    'edit'    => [
+                                        'type' => 'SelectIcon'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Sound',
+                                    'name'    => 'Sound',
+                                    'width'   => '200px',
+                                    'add'     => 'alarm',
+                                    'edit'    => [
+                                        'type'    => 'Select',
+                                        'options' => [
+                                            [
+                                                'caption' => 'Standard',
+                                                'value'   => ''
+                                            ],
+                                            [
+                                                'caption' => 'Alarm',
+                                                'value'   => 'alarm'
+                                            ],
+                                            [
+                                                'caption' => 'Bell',
+                                                'value'   => 'bell'
+                                            ],
+                                            [
+                                                'caption' => 'Boom',
+                                                'value'   => 'boom'
+                                            ],
+                                            [
+                                                'caption' => 'Buzzer',
+                                                'value'   => 'buzzer'
+                                            ],
+                                            [
+                                                'caption' => 'Connected',
+                                                'value'   => 'connected'
+                                            ],
+                                            [
+                                                'caption' => 'Dark',
+                                                'value'   => 'dark'
+                                            ],
+                                            [
+                                                'caption' => 'Digital',
+                                                'value'   => 'digital'
+                                            ],
+                                            [
+                                                'caption' => 'Drums',
+                                                'value'   => 'drums'
+                                            ],
+                                            [
+                                                'caption' => 'Duck',
+                                                'value'   => 'duck'
+                                            ],
+                                            [
+                                                'caption' => 'Full',
+                                                'value'   => 'full'
+                                            ],
+                                            [
+                                                'caption' => 'Happy',
+                                                'value'   => 'happy'
+                                            ],
+                                            [
+                                                'caption' => 'Horn',
+                                                'value'   => 'horn'
+                                            ],
+                                            [
+                                                'caption' => 'Inception',
+                                                'value'   => 'inception'
+                                            ],
+                                            [
+                                                'caption' => 'Kazoo',
+                                                'value'   => 'kazoo'
+                                            ],
+                                            [
+                                                'caption' => 'Roll',
+                                                'value'   => 'roll'
+                                            ],
+                                            [
+                                                'caption' => 'Siren',
+                                                'value'   => 'siren'
+                                            ],
+                                            [
+                                                'caption' => 'Space',
+                                                'value'   => 'space'
+                                            ],
+                                            [
+                                                'caption' => 'Trickling',
+                                                'value'   => 'trickling'
+                                            ],
+                                            [
+                                                'caption' => 'Turn',
+                                                'value'   => 'turn'
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Ziel ID',
+                                    'name'    => 'TargetID',
+                                    'width'   => '600px',
+                                    'add'     => 1,
+                                    'edit'    => [
+                                        'type' => 'SelectObject'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('PostNotificationAlarm'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'PostNotificationAlarmConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "TileVisualisation");'
+                                ]
+                            ]
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'List',
+                            'name'     => 'MailerNotificationAlarm',
+                            'caption'  => 'E-Mail',
+                            'rowCount' => $this->CountRows('MailerNotificationAlarm'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Mailer',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationAlarmConfigurationButton", "ID " . $MailerNotificationAlarm["ID"] . " konfigurieren", $MailerNotificationAlarm["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::MAILER_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Betreff',
+                                    'name'    => 'Subject',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('MailerNotificationAlarm'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'MailerNotificationAlarmConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ]
+                            ]
                         ]
                     ]
                 ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'MailerNotificationAlarm',
-                    'caption'  => 'E-Mail Alarm',
-                    'rowCount' => $amountMailerNotificationAlarm,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Mailer',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationAlarmConfigurationButton", "ID " . $MailerNotificationAlarm["ID"] . " konfigurieren", $MailerNotificationAlarm["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::MAILER_MODULE_GUID
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🔴 %1$s hat einen Alarm ausgelöst!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ]
-                    ],
-                    'values' => $mailerNotificationAlarmValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'MailerNotificationAlarmConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' ',
-                ],
-
                 ### OK
                 [
-                    'type'    => 'Label',
+                    'type'    => 'ExpansionPanel',
                     'caption' => 'OK',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'Notification',
-                    'caption'  => 'Nachricht OK',
-                    'rowCount' => $amountNotification,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
+                    'items'   => [
                         [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationConfigurationButton", "ID " . $Notification["ID"] . " konfigurieren", $Notification["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::WEBFRONT_MODULE_GUID
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'Icon',
-                            'width'   => '200px',
-                            'add'     => 'Ok',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'Title',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'DisplayDuration',
-                            'width'   => '200px',
-                            'add'     => 0,
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ]
-                    ],
-                    'values' => $notificationValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'NotificationConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'PushNotification',
-                    'caption'  => 'Push-Nachricht OK',
-                    'rowCount' => $amountPushNotification,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationConfigurationButton", "ID " . $PushNotification["ID"] . " konfigurieren", $PushNotification["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::WEBFRONT_MODULE_GUID
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'Title',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'Sound',
-                            'width'   => '200px',
-                            'add'     => '',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
+                            'type'     => 'List',
+                            'name'     => 'Notification',
+                            'caption'  => 'Nachricht',
+                            'rowCount' => $this->CountRows('Notification'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
                                     ]
+                                ],
+                                [
+                                    'caption' => 'WebFront',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "NotificationConfigurationButton", "ID " . $Notification["ID"] . " konfigurieren", $Notification["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::WEBFRONT_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Icon',
+                                    'name'    => 'Icon',
+                                    'width'   => '200px',
+                                    'add'     => 'Ok',
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'SelectIcon'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🟢 %1$s ist wieder OK!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Anzeigedauer',
+                                    'name'    => 'DisplayDuration',
+                                    'width'   => '200px',
+                                    'add'     => 0,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type'   => 'NumberSpinner',
+                                        'suffix' => 'Sekunden'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('Notification'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'NotificationConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
                                 ]
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
-                            'name'    => 'TargetID',
-                            'width'   => '200px',
-                            'add'     => 0,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ]
-                    ],
-                    'values' => $pushNotificationValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                            'type'    => 'Label',
+                            'caption' => ' '
                         ],
                         [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'PushNotificationConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'MailerNotification',
-                    'caption'  => 'E-Mail OK',
-                    'rowCount' => $amountMailerNotification,
-                    'add'      => true,
-                    'delete'   => true,
-                    'columns'  => [
+                            'type'     => 'List',
+                            'name'     => 'PushNotification',
+                            'caption'  => 'Push-Nachricht',
+                            'rowCount' => $this->CountRows('PushNotification'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'WebFront',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PushNotificationConfigurationButton", "ID " . $PushNotification["ID"] . " konfigurieren", $PushNotification["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::WEBFRONT_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🟢 %1$s ist wieder OK!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Sound',
+                                    'name'    => 'Sound',
+                                    'width'   => '200px',
+                                    'add'     => '',
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type'    => 'Select',
+                                        'options' => [
+                                            [
+                                                'caption' => 'Standard',
+                                                'value'   => ''
+                                            ],
+                                            [
+                                                'caption' => 'Alarm',
+                                                'value'   => 'alarm'
+                                            ],
+                                            [
+                                                'caption' => 'Bell',
+                                                'value'   => 'bell'
+                                            ],
+                                            [
+                                                'caption' => 'Boom',
+                                                'value'   => 'boom'
+                                            ],
+                                            [
+                                                'caption' => 'Buzzer',
+                                                'value'   => 'buzzer'
+                                            ],
+                                            [
+                                                'caption' => 'Connected',
+                                                'value'   => 'connected'
+                                            ],
+                                            [
+                                                'caption' => 'Dark',
+                                                'value'   => 'dark'
+                                            ],
+                                            [
+                                                'caption' => 'Digital',
+                                                'value'   => 'digital'
+                                            ],
+                                            [
+                                                'caption' => 'Drums',
+                                                'value'   => 'drums'
+                                            ],
+                                            [
+                                                'caption' => 'Duck',
+                                                'value'   => 'duck'
+                                            ],
+                                            [
+                                                'caption' => 'Full',
+                                                'value'   => 'full'
+                                            ],
+                                            [
+                                                'caption' => 'Happy',
+                                                'value'   => 'happy'
+                                            ],
+                                            [
+                                                'caption' => 'Horn',
+                                                'value'   => 'horn'
+                                            ],
+                                            [
+                                                'caption' => 'Inception',
+                                                'value'   => 'inception'
+                                            ],
+                                            [
+                                                'caption' => 'Kazoo',
+                                                'value'   => 'kazoo'
+                                            ],
+                                            [
+                                                'caption' => 'Roll',
+                                                'value'   => 'roll'
+                                            ],
+                                            [
+                                                'caption' => 'Siren',
+                                                'value'   => 'siren'
+                                            ],
+                                            [
+                                                'caption' => 'Space',
+                                                'value'   => 'space'
+                                            ],
+                                            [
+                                                'caption' => 'Trickling',
+                                                'value'   => 'trickling'
+                                            ],
+                                            [
+                                                'caption' => 'Turn',
+                                                'value'   => 'turn'
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Ziel ID',
+                                    'name'    => 'TargetID',
+                                    'width'   => '200px',
+                                    'add'     => 1,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'SelectObject'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('PushNotification'),
+                        ],
                         [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'edit'    => [
-                                'type' => 'CheckBox'
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'PushNotificationConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ]
                             ]
                         ],
                         [
-                            'caption' => 'Mailer',
-                            'name'    => 'ID',
-                            'width'   => '300px',
-                            'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationConfigurationButton", "ID " . $MailerNotification["ID"] . " konfigurieren", $MailerNotification["ID"]);',
-                            'edit'    => [
-                                'type'     => 'SelectModule',
-                                'moduleID' => self::MAILER_MODULE_GUID
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'List',
+                            'name'     => 'PostNotification',
+                            'caption'  => 'Post-Nachricht',
+                            'rowCount' => $this->CountRows('PostNotification'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Kachel Visualisierung',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "PostNotificationConfigurationButton", "ID " . $PostNotification["ID"] . " konfigurieren", $PostNotification["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                                    'name'    => 'Title',
+                                    'width'   => '350px',
+                                    'add'     => 'Aktualisierungsmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🟢 %1$s ist wieder OK!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '150px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Icon',
+                                    'name'    => 'Icon',
+                                    'width'   => '200px',
+                                    'add'     => 'Ok',
+                                    'edit'    => [
+                                        'type' => 'SelectIcon'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Sound',
+                                    'name'    => 'Sound',
+                                    'width'   => '200px',
+                                    'add'     => '',
+                                    'edit'    => [
+                                        'type'    => 'Select',
+                                        'options' => [
+                                            [
+                                                'caption' => 'Standard',
+                                                'value'   => ''
+                                            ],
+                                            [
+                                                'caption' => 'Alarm',
+                                                'value'   => 'alarm'
+                                            ],
+                                            [
+                                                'caption' => 'Bell',
+                                                'value'   => 'bell'
+                                            ],
+                                            [
+                                                'caption' => 'Boom',
+                                                'value'   => 'boom'
+                                            ],
+                                            [
+                                                'caption' => 'Buzzer',
+                                                'value'   => 'buzzer'
+                                            ],
+                                            [
+                                                'caption' => 'Connected',
+                                                'value'   => 'connected'
+                                            ],
+                                            [
+                                                'caption' => 'Dark',
+                                                'value'   => 'dark'
+                                            ],
+                                            [
+                                                'caption' => 'Digital',
+                                                'value'   => 'digital'
+                                            ],
+                                            [
+                                                'caption' => 'Drums',
+                                                'value'   => 'drums'
+                                            ],
+                                            [
+                                                'caption' => 'Duck',
+                                                'value'   => 'duck'
+                                            ],
+                                            [
+                                                'caption' => 'Full',
+                                                'value'   => 'full'
+                                            ],
+                                            [
+                                                'caption' => 'Happy',
+                                                'value'   => 'happy'
+                                            ],
+                                            [
+                                                'caption' => 'Horn',
+                                                'value'   => 'horn'
+                                            ],
+                                            [
+                                                'caption' => 'Inception',
+                                                'value'   => 'inception'
+                                            ],
+                                            [
+                                                'caption' => 'Kazoo',
+                                                'value'   => 'kazoo'
+                                            ],
+                                            [
+                                                'caption' => 'Roll',
+                                                'value'   => 'roll'
+                                            ],
+                                            [
+                                                'caption' => 'Siren',
+                                                'value'   => 'siren'
+                                            ],
+                                            [
+                                                'caption' => 'Space',
+                                                'value'   => 'space'
+                                            ],
+                                            [
+                                                'caption' => 'Trickling',
+                                                'value'   => 'trickling'
+                                            ],
+                                            [
+                                                'caption' => 'Turn',
+                                                'value'   => 'turn'
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Ziel ID',
+                                    'name'    => 'TargetID',
+                                    'width'   => '600px',
+                                    'add'     => 1,
+                                    'edit'    => [
+                                        'type' => 'SelectObject'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('PostNotification'),
+                        ],
+                        [
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'PostNotificationConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "TileVisualisation");'
+                                ]
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '350px',
-                            'add'     => 'Warnmelder',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'    => 'Label',
+                            'caption' => ' '
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'Text',
-                            'width'   => '350px',
-                            'add'     => '🟢 %1$s ist wieder OK!',
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
+                            'type'     => 'List',
+                            'name'     => 'MailerNotification',
+                            'caption'  => 'E-Mail',
+                            'rowCount' => $this->CountRows('MailerNotification'),
+                            'add'      => true,
+                            'delete'   => true,
+                            'columns'  => [
+                                [
+                                    'caption' => 'Aktiviert',
+                                    'name'    => 'Use',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Mailer',
+                                    'name'    => 'ID',
+                                    'width'   => '300px',
+                                    'add'     => 0,
+                                    'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "MailerNotificationConfigurationButton", "ID " . $MailerNotification["ID"] . " konfigurieren", $MailerNotification["ID"]);',
+                                    'edit'    => [
+                                        'type'     => 'SelectModule',
+                                        'moduleID' => self::MAILER_MODULE_GUID
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Betreff',
+                                    'name'    => 'Subject',
+                                    'width'   => '350px',
+                                    'add'     => 'Warnmelder',
+                                    'edit'    => [
+                                        'type' => 'ValidationTextBox'
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Text der Meldung (maximal 256 Zeichen)',
+                                    'name'    => 'Text',
+                                    'width'   => '350px',
+                                    'add'     => '🟢 %1$s ist wieder OK!',
+                                    'edit'    => [
+                                        'type'      => 'ValidationTextBox',
+                                        'multiline' => true
+                                    ]
+                                ],
+                                [
+                                    'caption' => 'Zeitstempel',
+                                    'name'    => 'UseTimestamp',
+                                    'width'   => '100px',
+                                    'add'     => true,
+                                    'visible' => false,
+                                    'edit'    => [
+                                        'type' => 'CheckBox'
+                                    ]
+                                ]
+                            ],
+                            'values' => $this->GetListValues('MailerNotification'),
                         ],
                         [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'add'     => true,
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
+                            'type'  => 'RowLayout',
+                            'items' => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Neue Instanz erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
+                                ],
+                                [
+                                    'type'     => 'OpenObjectButton',
+                                    'name'     => 'MailerNotificationConfigurationButton',
+                                    'caption'  => 'Bearbeiten',
+                                    'visible'  => false,
+                                    'objectID' => 0
+                                ]
                             ]
-                        ]
-                    ],
-                    'values' => $mailerNotificationValues,
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'name'     => 'MailerNotificationConfigurationButton',
-                            'caption'  => 'Bearbeiten',
-                            'visible'  => false,
-                            'objectID' => 0
                         ]
                     ]
                 ]
             ]
         ];
 
-        ##### Visualisation
-
+        //Visualisation
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel7',
@@ -1847,5 +2050,116 @@ trait WM_ConfigurationForm
         ];
 
         return json_encode($form);
+    }
+
+    ######### Private
+
+    /**
+     * Counts the rows of a list.
+     *
+     * @param string $ListName
+     * @return int
+     * @throws Exception
+     */
+    private function CountRows(string $ListName): int
+    {
+        $elements = json_decode($this->ReadPropertyString($ListName), true);
+        $amountRows = count($elements) + 1;
+        if ($amountRows == 1) {
+            $amountRows = 3;
+        }
+        return $amountRows;
+    }
+    /**
+     * Gets the colors for all rows of a list.
+     *
+     * @param string $ListName
+     * @return array
+     * @throws Exception
+     */
+    private function GetListValues(string $ListName): array
+    {
+        $values = [];
+        switch ($ListName) {
+            case 'TriggerList':
+            case 'VariableLinkList':
+                $elements = json_decode($this->ReadPropertyString('TriggerList'), true);
+                foreach ($elements as $element) {
+                    $sensorID = 0;
+                    if ($element['PrimaryCondition'] != '') {
+                        $primaryCondition = json_decode($element['PrimaryCondition'], true);
+                        if (array_key_exists(0, $primaryCondition)) {
+                            if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                            }
+                        }
+                    }
+                    //Check conditions first
+                    $conditions = true;
+                    if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) {
+                        $conditions = false;
+                    }
+                    if ($element['SecondaryCondition'] != '') {
+                        $secondaryConditions = json_decode($element['SecondaryCondition'], true);
+                        if (array_key_exists(0, $secondaryConditions)) {
+                            if (array_key_exists('rules', $secondaryConditions[0])) {
+                                $rules = $secondaryConditions[0]['rules']['variable'];
+                                foreach ($rules as $rule) {
+                                    if (array_key_exists('variableID', $rule)) {
+                                        $id = $rule['variableID'];
+                                        if ($id <= 1 || !@IPS_ObjectExists($id)) {
+                                            $conditions = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $rowColor = '#FFC0C0'; //red
+                    if ($conditions) {
+                        $rowColor = '#C0FFC0'; //light green
+                        if (!$element['Use']) {
+                            $rowColor = '#DFDFDF'; //grey
+                        }
+                    }
+                    if ($ListName == 'VariableLinkList') {
+                        $values[] = ['SensorID' => $sensorID, 'Designation' => $element['Designation'], 'Comment' => $element['Comment']];
+                    } else {
+                        $values[] = ['rowColor' => $rowColor];
+                    }
+                }
+                return $values;
+
+            case 'NotificationAlarm':
+            case 'PushNotificationAlarm':
+            case 'PostNotificationAlarm':
+            case 'MailerNotificationAlarm':
+                $elements = json_decode($this->ReadPropertyString($ListName), true);
+                foreach ($elements as $element) {
+                    $rowColor = '#C0FFC0'; //light green
+                    if (!$element['Use']) {
+                        $rowColor = '#DFDFDF'; //grey
+                    }
+                    $id = $element['ID'];
+                    if ($id <= 1 || !@IPS_ObjectExists($id)) {
+                        $rowColor = '#FFC0C0'; //red
+                    }
+                    $values[] = ['rowColor' => $rowColor];
+                }
+                return $values;
+        }
+        return $values;
+    }
+
+    /**
+     * Counts the elements of a list.
+     *
+     * @param string $ListName
+     * @return int
+     * @throws Exception
+     */
+    private function CountElements(string $ListName): int
+    {
+        return count(json_decode($this->ReadPropertyString($ListName), true));
     }
 }
